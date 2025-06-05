@@ -4,13 +4,26 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "einops>=0.8.1",
+    "einx[torch]>=0.3.0",
+    "seaborn>=0.13.2",
+    "torch>=2.7.1",
+    "torchvision>=0.22.1",
+]
 
 [tool.uv.sources]
 flow = { workspace = true }
+torch = { index = "torch-cuda" }
+torchvision = { index = "torch-cuda" }
 
 [tool.uv.workspace]
 members = ["flow"]
 
 [dependency-groups]
 dev = ["ipykernel>=6.29.5"]
+
+[[tool.uv.index]]
+explicit = true
+name = "torch-cuda"
+url = "https://download.pytorch.org/whl/cu128"
