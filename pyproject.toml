@@ -9,6 +9,7 @@ dependencies = [
     "einx[torch]>=0.3.0",
     "seaborn>=0.13.2",
     "torch>=2.7.1",
+    "torchcodec>=0.4.0",
     "torchvision>=0.22.1",
 ]
 
@@ -22,6 +23,9 @@ members = ["flow"]
 
 [dependency-groups]
 dev = ["ipykernel>=6.29.5"]
+
+[[tool.uv.index]]
+url = "file:///mnt/storage/git/flow-matching/torch-cuda"
 
 [[tool.uv.index]]
 explicit = true
