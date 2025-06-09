@@ -13,10 +13,26 @@ class Schedule(abc.ABC):
 
 class LinearSchedule(Schedule):
     def alpha(self, t: Tensor) -> Tensor:
-        return rearrange(t, "n -> n 1")
+        return t
 
     def beta(self, t: Tensor) -> Tensor:
-        return rearrange(1 - t, "n -> n 1")
+        return 1 - t
+
+    def alpha_dt(self, t: Tensor) -> Tensor:
+        _, d_alpha = jvp(self.alpha, t, torch.ones_like(t))
+        return cast(Tensor, d_alpha)
+
+    def beta_dt(self, t: Tensor) -> Tensor:
+        _, d_beta = jvp(self.beta, t, torch.ones_like(t))
+        return cast(Tensor, d_beta)
+
+
+class RootSchedule(Schedule):
+    def alpha(self, t: Tensor) -> Tensor:
+        return torch.sqrt(t)
+
+    def beta(self, t: Tensor) -> Tensor:
+        return torch.sqrt(1 - t)
 
     def alpha_dt(self, t: Tensor) -> Tensor:
         _, d_alpha = jvp(self.alpha, t, torch.ones_like(t))

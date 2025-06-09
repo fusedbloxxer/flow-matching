@@ -3,6 +3,7 @@ import abc
 from torch import Tensor
 from dataclasses import dataclass
 
+from .net import MLP
 from .flow import LinearSchedule
 
 
@@ -31,8 +32,6 @@ class CondGaussVectorField(VectorField):
         self.schedule = LinearSchedule()
 
     def drift(self, x_t: Tensor, t: Tensor) -> Tensor:
-        t = t.repeat(x_t.size(0))
-
         alpha_dt = self.schedule.alpha_dt(t)
         beta_dt = self.schedule.beta_dt(t)
 
@@ -44,3 +43,11 @@ class CondGaussVectorField(VectorField):
         u_xtz = x_data + x_init
 
         return u_xtz
+
+
+@dataclass(kw_only=True)
+class MLPVectorField(VectorField):
+    model: MLP
+
+    def drift(self, x_t: Tensor, t: Tensor) -> Tensor:
+        return self.model.forward(x_t, t)
