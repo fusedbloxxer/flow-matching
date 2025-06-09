@@ -4,7 +4,16 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "einops>=0.8.1",
+    "matplotlib>=3.10.3",
+    "mlflow>=2.22.1",
+    "torch>=2.7.1",
+    "torchcodec>=0.4.0",
+    "torchmetrics>=1.7.2",
+    "torchvision>=0.22.1",
+    "tqdm>=4.67.1",
+]
 
 [build-system]
 requires = ["hatchling"]
