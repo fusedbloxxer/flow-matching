@@ -15,20 +15,18 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-flow = { workspace = true }
 torch = { index = "torch-cuda" }
 torchvision = { index = "torch-cuda" }
+flow_intro = { workspace = true }
+flow_mnist = { workspace = true }
 
 [tool.uv.workspace]
-members = ["flow"]
-
-[dependency-groups]
-dev = ["ipykernel>=6.29.5"]
-
-[[tool.uv.index]]
-url = "file:///mnt/storage/git/flow-matching/torch-cuda"
+members = ["workspaces/*"]
 
 [[tool.uv.index]]
 explicit = true
 name = "torch-cuda"
 url = "https://download.pytorch.org/whl/cu128"
+
+[dependency-groups]
+dev = ["ipykernel>=6.29.5"]
