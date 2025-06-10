@@ -1,0 +1,5 @@
+path:
+  root: ../
+
+data:
+  path: ${path.root}/data
