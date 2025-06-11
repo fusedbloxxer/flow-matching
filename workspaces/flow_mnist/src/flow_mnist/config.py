@@ -1,7 +1,7 @@
+from typing import cast
 from pathlib import Path
-from typing import cast, Dict
+from dataclasses import dataclass
 from omegaconf import OmegaConf, SCMode
-from dataclasses import dataclass, field
 
 
 @dataclass
@@ -11,16 +11,31 @@ class DataConfig:
 
 @dataclass
 class PathConfig:
+    storage: Path
     root: Path
+
+
+@dataclass
+class ServerConfig:
+    path: Path
+    host: str
+    port: int
+    uri: str
+
+
+@dataclass
+class LogConfig:
+    server: ServerConfig
 
 
 @dataclass
 class Config:
     path: PathConfig
     data: DataConfig
+    log: LogConfig
 
 
-def load_config(path: Path) -> Config:
+def load_config(path: str | Path) -> Config:
     schema = OmegaConf.structured(Config)
     config = OmegaConf.load(path)
     config = OmegaConf.merge(schema, config)

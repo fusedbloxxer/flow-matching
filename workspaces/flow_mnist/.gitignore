@@ -1,1 +1,5 @@
+# Runtime storage
+.storage/
+
+# Dataset storage
 data/

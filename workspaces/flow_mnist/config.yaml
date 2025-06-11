@@ -1,5 +1,13 @@
 path:
-  root: ../
+  root: .
+  storage: ${.root}/.storage
+
+log:
+  server:
+    uri: "http://${.host}:${.port}"
+    path: ${path.storage}/mlflow
+    host: 127.0.0.1
+    port: 8080
 
 data:
   path: ${path.root}/data
