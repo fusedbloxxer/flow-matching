@@ -24,15 +24,10 @@ class MNISTDataset(Dataset):
 
     def __getitem__(self, index: int) -> Tuple[Tensor, Tensor]:
         sample = self.data_[index]
-
         label: Tensor = torch.tensor(sample[1])
         image: Tensor = sample[0]
-
         image = self.transform_(image)
         return image, label
 
     def __len__(self) -> int:
         return len(self.data_)
-
-
-__all__ = ["MNISTDataset"]

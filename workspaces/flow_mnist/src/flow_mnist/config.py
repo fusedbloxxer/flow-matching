@@ -22,8 +22,19 @@ class VAEConfig:
 
 
 @dataclass
+class FlowConfig:
+    dim_in: int
+    dim_hidden: int
+    time_emb_dim: int
+    n_blocks: int
+    n_layers: int
+    num_groups: int
+
+
+@dataclass
 class ModelConfig:
     vae: VAEConfig
+    flow: FlowConfig
 
 
 @dataclass
@@ -35,12 +46,28 @@ class ServerConfig:
 
 
 @dataclass
+class LogParamConfig:
+    step_interval: int
+    sample_steps: int
+    batch_size: int
+
+
+@dataclass
 class LogConfig:
+    param: LogParamConfig
     server: ServerConfig
 
 
 @dataclass
+class TrainConfig:
+    batch_size: int
+    steps: int
+    lr: float
+
+
+@dataclass
 class Config:
+    train: TrainConfig
     model: ModelConfig
     path: PathConfig
     data: DataConfig

@@ -10,14 +10,14 @@ from torch.utils.data import Dataset
 
 
 @dataclass
-class Sampleable(abc.ABC):
+class Sampleable[T](abc.ABC):
     @abc.abstractmethod
-    def sample(self, num_samples: int) -> Tensor:
+    def sample(self, num_samples: int) -> T:
         raise NotImplementedError()
 
 
 @dataclass
-class BatchSampleable(Sampleable):
+class BatchSampleable(Sampleable[Tensor]):
     batch: Tensor
 
     def sample(self, num_samples: int) -> Tensor:
@@ -26,7 +26,7 @@ class BatchSampleable(Sampleable):
 
 
 @dataclass
-class NormalSampleable(Sampleable):
+class NormalSampleable(Sampleable[Tensor]):
     size: Tuple[int, ...]
 
     def sample(self, num_samples: int) -> Tensor:
@@ -34,20 +34,34 @@ class NormalSampleable(Sampleable):
 
 
 @dataclass
-class MNISTSampleable(Sampleable):
+class MNISTSampleable(Sampleable[Tuple[Tensor, Tensor]]):
     dataset: Dataset[Tuple[Tensor, Tensor]]
 
-    def sample(self, num_samples: int) -> Tensor:
+    def sample(self, num_samples: int) -> Tuple[Tensor, Tensor]:
         size = len(cast(Any, self.dataset))
         index = torch.randperm(size).tolist()
         index = index[:num_samples]
-        x_data = [self.dataset[i][0] for i in index]
+        x_pairs = [self.dataset[i] for i in index]
+        x_label = [y for _, y in x_pairs]
+        x_data = [x for x, _ in x_pairs]
         x_data = rearrange(x_data, "b c h w -> b c h w")
-        return x_data
+        x_label = rearrange(x_label, "b -> b")
+        return x_data, x_label
 
 
 @dataclass
-class LambdaSampleable(Sampleable):
+class MNISTImageSampleable(Sampleable[Tensor]):
+    dataset: Dataset[Tuple[Tensor, Tensor]]
+
+    def __post_init__(self) -> None:
+        self.sampleable = MNISTSampleable(self.dataset)
+
+    def sample(self, num_samples: int) -> Tensor:
+        return self.sampleable.sample(num_samples)[0]
+
+
+@dataclass
+class LambdaSampleable(Sampleable[Tensor]):
     sampleable: Sampleable
     transform: Callable[[Tensor], Tensor]
 
@@ -64,7 +78,7 @@ class FlowPath(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def cond_vector_field(self, x_t: Tensor, t: Tensor) -> Tensor:
+    def cond_vector_field(self, x_1: Tensor, x_t: Tensor, t: Tensor) -> Tensor:
         raise NotImplementedError()
 
 
@@ -79,8 +93,8 @@ class OTFlowPath(FlowPath):
 
 @dataclass
 class ProbPath(FlowPath):
-    p_init: Sampleable
-    p_data: Sampleable
+    p_init: Sampleable[Tensor]
+    p_data: Sampleable[Tensor]
     f_path: FlowPath
 
     def flow(self, x_0: Tensor, x_1: Tensor, t: Tensor) -> Tensor:
@@ -98,5 +112,5 @@ class ProbPath(FlowPath):
         x_t = self.cond_prob_path(x_1=x_1, t=t)
         return x_t
 
-    def cond_vector_field(self, x_t: Tensor, t: Tensor) -> Tensor:
-        return self.f_path.cond_vector_field(x_t=x_t, t=t)
+    def cond_vector_field(self, x_1: Tensor, x_t: Tensor, t: Tensor) -> Tensor:
+        return self.f_path.cond_vector_field(x_1=x_1, x_t=x_t, t=t)

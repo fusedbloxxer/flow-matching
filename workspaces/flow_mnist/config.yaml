@@ -8,11 +8,27 @@ log:
     path: ${path.storage}/mlflow
     host: 127.0.0.1
     port: 8080
+  param:
+    step_interval: 128
+    sample_steps: 1000
+    batch_size: 8
 
 model:
   vae:
     repo: "stabilityai/sd-vae-ft-mse"
     scale: 0.19374
+  flow:
+    dim_in: 64
+    dim_hidden: 256
+    time_emb_dim: 128
+    n_blocks: 8
+    n_layers: 3
+    num_groups: 32
+
+train:
+  batch_size: 256
+  steps: 40000
+  lr: 1e-4
 
 data:
   path: ${path.root}/data
