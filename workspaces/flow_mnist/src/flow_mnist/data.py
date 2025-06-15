@@ -4,11 +4,9 @@ import torchvision.transforms.v2 as T
 from pathlib import Path
 from typing import Tuple
 from torch import Tensor
+from einops import repeat
+from torch.utils.data import Dataset
 from torchvision.datasets import MNIST
-from torch.utils.data import Dataset, DataLoader
-
-from .utils import image2norm
-from .config import DataConfig
 
 
 class MNISTDataset(Dataset):
@@ -19,6 +17,8 @@ class MNISTDataset(Dataset):
             [
                 T.ToImage(),
                 T.ToDtype(dtype=torch.float32, scale=True),
+                T.Lambda(lambda x: repeat(x, "1 h w -> 3 h w")),
+                T.Resize((32, 32), interpolation=T.InterpolationMode.NEAREST),
             ]
         )
 
@@ -33,3 +33,6 @@ class MNISTDataset(Dataset):
 
     def __len__(self) -> int:
         return len(self.data_)
+
+
+__all__ = ["MNISTDataset"]

@@ -9,5 +9,10 @@ log:
     host: 127.0.0.1
     port: 8080
 
+model:
+  vae:
+    repo: "stabilityai/sd-vae-ft-mse"
+    scale: 0.19374
+
 data:
   path: ${path.root}/data

@@ -16,6 +16,17 @@ class PathConfig:
 
 
 @dataclass
+class VAEConfig:
+    scale: float
+    repo: str
+
+
+@dataclass
+class ModelConfig:
+    vae: VAEConfig
+
+
+@dataclass
 class ServerConfig:
     path: Path
     host: str
@@ -30,6 +41,7 @@ class LogConfig:
 
 @dataclass
 class Config:
+    model: ModelConfig
     path: PathConfig
     data: DataConfig
     log: LogConfig
