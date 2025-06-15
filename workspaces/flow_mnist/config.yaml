@@ -27,8 +27,8 @@ model:
 
 train:
   batch_size: 256
-  steps: 40000
-  lr: 1e-4
+  steps: 5000
+  lr: 1e-3
 
 data:
   path: ${path.root}/data
