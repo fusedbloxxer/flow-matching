@@ -3,7 +3,7 @@ import mlflow
 
 from tqdm import trange
 from typing import Tuple
-from einops import rearrange
+from einops import reduce
 from dataclasses import dataclass
 from torch import Tensor
 from torch.optim import AdamW
@@ -72,6 +72,7 @@ class Trainer:
                 x_1 = self.ode.sample(x_0, t)
                 x_1 = x_1.reshape((-1, 4, 4, 4))
                 x_1 = self.vae.decode(x=x_1)
+                x_1 = reduce(x_1, 'b c h w -> b 1 h w', 'mean')
                 x_1 = make_grid(x_1.cpu(), nrow=bs)
 
                 f = plot_batch(x_1, x_1.size(0), show=False)

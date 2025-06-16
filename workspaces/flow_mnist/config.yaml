@@ -9,9 +9,9 @@ log:
     host: 127.0.0.1
     port: 8080
   param:
-    step_interval: 128
+    step_interval: 250
     sample_steps: 1000
-    batch_size: 8
+    batch_size: 20
 
 model:
   vae:
@@ -20,15 +20,15 @@ model:
   flow:
     dim_in: 64
     dim_hidden: 256
-    time_emb_dim: 128
-    n_blocks: 8
-    n_layers: 3
+    n_blocks: 4
+    n_layers: 2
     num_groups: 32
+    time_emb_dim: 128
 
 train:
-  batch_size: 256
-  steps: 5000
-  lr: 1e-3
+  batch_size: 16
+  steps: 20000
+  lr: 1e-4
 
 data:
   path: ${path.root}/data
