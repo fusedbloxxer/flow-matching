@@ -11,7 +11,7 @@ log:
   param:
     step_interval: 250
     sample_steps: 1000
-    batch_size: 20
+    batch_size: 10
 
 model:
   vae:
@@ -20,15 +20,18 @@ model:
   flow:
     dim_in: 64
     dim_hidden: 256
+    time_emb_dim: 128
+    class_emb_dim: 128
     n_blocks: 4
     n_layers: 2
     num_groups: 32
-    time_emb_dim: 128
+    num_classes: 10
 
 train:
-  batch_size: 16
-  steps: 20000
-  lr: 1e-4
+  batch_size: 1024
+  steps: 10000
+  drop: 0.1
+  lr: 1e-3
 
 data:
   path: ${path.root}/data

@@ -26,9 +26,11 @@ class FlowConfig:
     dim_in: int
     dim_hidden: int
     time_emb_dim: int
+    class_emb_dim: int
     n_blocks: int
     n_layers: int
     num_groups: int
+    num_classes: int
 
 
 @dataclass
@@ -61,6 +63,7 @@ class LogConfig:
 @dataclass
 class TrainConfig:
     batch_size: int
+    drop: float
     steps: int
     lr: float
 

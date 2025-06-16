@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from torch import Tensor, FloatTensor
+from torch.nn.functional import one_hot
 from typing import Unpack, TypedDict, cast
 from diffusers.models.autoencoders.vae import DecoderOutput
 from diffusers.models.modeling_outputs import AutoencoderKLOutput
@@ -11,7 +12,7 @@ from .utils import image2norm, norm2image
 
 
 class ConditionArgs(TypedDict):
-    y: Tensor
+    y: Tensor | None
 
 
 class AutoEncoder(nn.Module):
@@ -50,6 +51,30 @@ class AutoEncoder(nn.Module):
         return next(self.parameters()).device
 
 
+class LabelEmbedding(nn.Module):
+    def __init__(self, *args, dim_class: int, emb_dim: int, num_classes: int, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.num_embeddings = num_classes + 1
+        self.padding_idx = num_classes
+
+        self.embd_table = nn.Embedding(
+            num_embeddings=self.num_embeddings,
+            padding_idx=self.padding_idx,
+            embedding_dim=dim_class,
+        )
+
+        self.mlp = nn.Sequential(
+            nn.Linear(dim_class, emb_dim),
+            nn.SiLU(),
+            nn.Linear(emb_dim, emb_dim),
+        )
+
+    def forward(self, y: Tensor) -> Tensor:
+        y_embd = self.embd_table(y)
+        y_proj = self.mlp(y_embd)
+        return y_proj
+
+
 class TimeEmbedding(nn.Module):
     def __init__(self, *args, dim_timesteps: int, emb_dim: int, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -71,13 +96,15 @@ class ResidualBlock(nn.Module):
         n_layers: int,
         dim_hidden: int,
         time_emb_dim: int,
+        class_emb_dim: int,
         num_groups: int = 8,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.n_layers = n_layers
-        self.time_proj = nn.Linear(time_emb_dim, dim_hidden)
         self.layers = nn.ModuleList()
+        self.time_proj = nn.Linear(time_emb_dim, dim_hidden)
+        self.class_proj = nn.Linear(class_emb_dim, dim_hidden)
         for i in range(n_layers):
             in_dim = dim if i == 0 else dim_hidden
             out_dim = dim_hidden
@@ -85,12 +112,12 @@ class ResidualBlock(nn.Module):
             self.layers.append(block)
         self.out = nn.Linear(dim_hidden, dim)
 
-    def forward(self, x: torch.Tensor, t_emb: torch.Tensor) -> torch.Tensor:
-        h = x
+    def forward(self, x: torch.Tensor, t_emb: torch.Tensor, y_emb: Tensor) -> torch.Tensor:
+        h: Tensor = x
         for i, layer in enumerate(self.layers):
             h = layer(h)
             if i == self.n_layers // 2:
-                h = h + self.time_proj(t_emb)
+                h = h * self.time_proj(t_emb) + self.class_proj(y_emb)
         return x + self.out(h)
 
 
@@ -101,12 +128,15 @@ class FlowModel(nn.Module):
         dim_in: int = 64,
         dim_hidden: int = 128,
         time_emb_dim: int = 128,
+        class_emb_dim: int = 128,
         n_blocks: int = 4,
         n_layers: int = 2,
         num_groups: int = 8,
+        num_classes: int = 10,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self.class_embedding = LabelEmbedding(dim_class=1, emb_dim=class_emb_dim, num_classes=num_classes)
         self.time_embedding = TimeEmbedding(dim_timesteps=1, emb_dim=time_emb_dim)
 
         self.blocks = nn.ModuleList(
@@ -117,6 +147,7 @@ class FlowModel(nn.Module):
                     num_groups=num_groups,
                     dim_hidden=dim_hidden,
                     time_emb_dim=time_emb_dim,
+                    class_emb_dim=class_emb_dim,
                 )
                 for _ in range(n_blocks)
             ]
@@ -134,8 +165,17 @@ class FlowModel(nn.Module):
         t: torch.Tensor,
         **cond: Unpack[ConditionArgs],
     ) -> torch.Tensor:
-        t_emb = self.time_embedding(t)
-        h = x
+        B = x.size(0)
+
+        if "y" not in cond or cond["y"] is None:
+            y = torch.full((B,), self.class_embedding.padding_idx, device=x.device)
+        else:
+            y = cond["y"]
+
+        y_emb: Tensor = self.class_embedding(y)
+        t_emb: Tensor = self.time_embedding(t)
+
+        h: Tensor = x
         for block in self.blocks:
-            h = block(h, t_emb)
+            h = block.forward(x=h, t_emb=t_emb, y_emb=y_emb)
         return self.out(h)
