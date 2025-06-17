@@ -9,6 +9,7 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "flow-flowers",
     "flow-intro",
     "flow-matching",
     "flow-mnist",
@@ -395,6 +396,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/c0/de/e47735752347f4128
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3d/68/9d4508e893976286d2ead7f8f571314af6c2037af34853a30fd769c02e9d/flask-3.1.1-py3-none-any.whl", hash = "sha256:07aae2bb5eaf77993ef57e357491839f5fd9f4dc281593a81a9e4d79a24f295c", size = 103305, upload-time = "2025-05-13T15:01:15.591Z" },
 ]
+
+[[package]]
+name = "flow-flowers"
+version = "0.1.0"
+source = { editable = "workspaces/flow_flowers" }
 
 [[package]]
 name = "flow-intro"

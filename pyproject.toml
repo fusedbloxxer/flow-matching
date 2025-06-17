@@ -9,6 +9,7 @@ dependencies = []
 [tool.uv.sources]
 flow_intro = { workspace = true }
 flow_mnist = { workspace = true }
+flow_flowers = { workspace = true }
 torch = { index = "torch-cuda" }
 torchvision = { index = "torch-cuda" }
 
