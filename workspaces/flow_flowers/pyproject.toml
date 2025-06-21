@@ -4,8 +4,8 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-
 dependencies = [
+    "cyclopts>=3.19.0",
     "einops>=0.8.1",
     "einx[torch]>=0.3.0",
     "matplotlib>=3.10.3",
@@ -14,13 +14,10 @@ dependencies = [
     "torch>=2.7.1",
     "torchvision>=0.22.1",
     "tqdm>=4.67.1",
-    "typer>=0.16.0",
 ]
-
 
 [dependency-groups]
 dev = ["ipykernel>=6.29.5", "ipywidgets>=8.1.7", "jupyter>=1.1.1"]
-
 
 [build-system]
 requires = ["hatchling"]

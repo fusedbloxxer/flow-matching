@@ -1,4 +1,5 @@
 # Visual Studio Code
+.continue/
 .vscode/
 
 # Byte-compiled / optimized / DLL files

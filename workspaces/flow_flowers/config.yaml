@@ -1,0 +1,11 @@
+base:
+  path:
+    store: .storage
+
+log:
+  server:
+    store: ${base.path.store}/${.name}
+    uri: http://${.host}:${.port}
+    host: "127.0.0.1"
+    name: mlflow
+    port: 8080
