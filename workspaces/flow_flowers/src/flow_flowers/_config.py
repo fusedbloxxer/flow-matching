@@ -44,10 +44,11 @@ class Config:
     base: BaseConfig
 
     @staticmethod
-    def init(path: Path, conf: Optional[Dict] = None) -> "Config":
+    def init(path: Path, conf_cli: Optional[Dict] = None) -> "Config":
         base_type = OmegaConf.structured(Config)
-        base_conf = OmegaConf.load(path)
-        conf_dict = OmegaConf.merge(base_type, base_conf, conf)
+        conf_cli = dict() if conf_cli is None else conf_cli
+        conf_base = OmegaConf.load(path)
+        conf_dict = OmegaConf.merge(base_type, conf_base, conf_cli)
         conf_data = OmegaConf.to_container(conf_dict, structured_config_mode=SCMode.INSTANTIATE, resolve=False)
         conf_data = cast(Config, conf_data)
         os.chdir(path.parent)
