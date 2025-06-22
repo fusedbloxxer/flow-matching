@@ -28,6 +28,7 @@ include = ["pyproject.toml", "*.py", "*.ipynb"]
 
 [tool.ruff.lint]
 extend-select = ["ICN", "I"]
+extend-fixable = ["ICN", "I"]
 
 [tool.ruff.format]
 line-ending = "lf"
@@ -35,7 +36,10 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.ruff.lint.isort]
+order-by-type = true
 lines-between-types = 1
+lines-after-imports = 2
+force-wrap-aliases = true
 combine-as-imports = true
 
 [dependency-groups]

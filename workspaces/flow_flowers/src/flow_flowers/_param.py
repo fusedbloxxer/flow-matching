@@ -1,7 +1,8 @@
-from pathlib import Path
-from cyclopts import Parameter
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Annotated, Optional
+
+from cyclopts import Parameter
 
 
 @Parameter("*")

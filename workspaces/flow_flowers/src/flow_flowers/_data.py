@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import torch
 
-from pathlib import Path
 from scipy.io import loadmat
 from torch.utils.data import Dataset
 

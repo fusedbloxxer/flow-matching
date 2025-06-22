@@ -1,8 +1,9 @@
+from typing import Optional
+
 import mlflow.cli
 
 from box import Box
 from cyclopts import App
-from typing import Optional
 
 from ._config import Config
 from ._param import ServerParam, TrainParam
