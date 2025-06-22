@@ -4,7 +4,6 @@ import torch
 from typing import cast
 from torch import Tensor
 from torch.autograd.functional import jvp
-from einops import rearrange
 
 
 class Schedule(abc.ABC):

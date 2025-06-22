@@ -1,6 +1,5 @@
 import einx
 import torch
-import torch.nn as nn
 
 from typing import cast
 from torch import Tensor

@@ -1,17 +1,14 @@
-import os
 import mlflow.cli
 
 from box import Box
 from cyclopts import App
-from dataclasses import asdict
-from typing import Optional, Dict, cast
+from typing import Optional
 
-from ._param import *
 from ._config import Config
+from ._param import ServerParam, TrainParam
 
 
 app = App()
-
 app_server = App(name="server")
 app.command(app_server)
 
@@ -30,7 +27,16 @@ def server_start(param: Optional[ServerParam] = None) -> None:
     config = Config.init(param.config_path, cli_cfg.to_dict())
 
     server = config.track.server
-    mlflow.cli.server(["--backend-store-uri", server.store, "--host", server.host, "--port", server.port])
+    mlflow.cli.server(
+        [
+            "--backend-store-uri",
+            server.store,
+            "--host",
+            server.host,
+            "--port",
+            server.port,
+        ]
+    )
 
 
 @app.command(name="train")
@@ -43,5 +49,6 @@ def train(param: Optional[TrainParam] = None) -> None:
     config = Config.init(param.config_path, cli_cfg.to_dict())
 
     print(config)
+
 
 __all__ = ["app"]

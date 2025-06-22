@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 
 from torch import Tensor, FloatTensor
-from torch.nn.functional import one_hot
 from typing import Unpack, TypedDict, cast
 from diffusers.models.autoencoders.vae import DecoderOutput
 from diffusers.models.modeling_outputs import AutoencoderKLOutput

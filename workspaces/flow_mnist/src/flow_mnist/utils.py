@@ -19,5 +19,6 @@ def plot_batch(x: Tensor, nrow: int = 5, padding: int = 5, figsize: Tuple | None
     x_grid = rearrange(x_grid, "c h w -> h w c")
     f = plt.figure(figsize=figsize)
     plt.imshow(x_grid, cmap="gray")
-    if show: plt.show()
+    if show:
+        plt.show()
     return f

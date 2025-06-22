@@ -1,7 +1,6 @@
 import abc
 import torch
 
-from typing import Tuple
 from torch import Tensor
 from dataclasses import dataclass
 
