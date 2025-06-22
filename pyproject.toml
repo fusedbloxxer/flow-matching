@@ -22,8 +22,8 @@ name = "torch-cuda"
 url = "https://download.pytorch.org/whl/cu128"
 
 [tool.ruff]
-line-length = 88
 indent-width = 4
+line-length = 224
 include = ["pyproject.toml", "*.py", "*.ipynb"]
 
 [tool.ruff.lint]

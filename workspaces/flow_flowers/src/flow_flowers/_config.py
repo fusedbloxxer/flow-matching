@@ -48,9 +48,7 @@ class Config:
         base_type = OmegaConf.structured(Config)
         base_conf = OmegaConf.load(path)
         conf_dict = OmegaConf.merge(base_type, base_conf, conf)
-        conf_data = OmegaConf.to_container(
-            conf_dict, structured_config_mode=SCMode.INSTANTIATE, resolve=False
-        )
+        conf_data = OmegaConf.to_container(conf_dict, structured_config_mode=SCMode.INSTANTIATE, resolve=False)
         conf_data = cast(Config, conf_data)
         os.chdir(path.parent)
         return conf_data
