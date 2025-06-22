@@ -1,11 +1,16 @@
 base:
-  path:
-    store: .storage
+  store: .store
 
-log:
+track:
   server:
-    store: ${base.path.store}/${.name}
+    store: ${base.store}/${.name}
     uri: http://${.host}:${.port}
-    host: "127.0.0.1"
+    host: 127.0.0.1
     name: mlflow
     port: 8080
+
+train:
+  epochs: 80
+
+data:
+  store: ${base.store}/data

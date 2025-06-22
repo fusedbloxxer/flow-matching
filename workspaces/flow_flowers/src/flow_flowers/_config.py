@@ -1,17 +1,19 @@
-from typing import cast
+import os
+
 from pathlib import Path
 from dataclasses import dataclass
+from typing import Optional, Dict, cast
 from omegaconf import OmegaConf, SCMode
 
 
 @dataclass
-class PathConfig:
+class BaseConfig:
     store: Path
 
 
 @dataclass
-class BaseConfig:
-    path: PathConfig
+class DataConfig:
+    store: Path
 
 
 @dataclass
@@ -24,23 +26,31 @@ class ServerConfig:
 
 
 @dataclass
-class LoggingConfig:
+class TrackConfig:
     server: ServerConfig
 
 
 @dataclass
+class TrainConfig:
+    epochs: int
+
+
+@dataclass
 class Config:
-    log: LoggingConfig
+    train: TrainConfig
+    track: TrackConfig
+    data: DataConfig
     base: BaseConfig
 
+    @staticmethod
+    def init(path: Path, conf: Optional[Dict] = None) -> "Config":
+        base_type = OmegaConf.structured(Config)
+        base_conf = OmegaConf.load(path)
+        conf_dict = OmegaConf.merge(base_type, base_conf, conf)
+        conf_data = OmegaConf.to_container(conf_dict, structured_config_mode=SCMode.INSTANTIATE, resolve=False)
+        conf_data = cast(Config, conf_data)
+        os.chdir(path.parent)
+        return conf_data
 
-def load_config(config_path: Path) -> Config:
-    base_type = OmegaConf.structured(Config)
-    base_conf = OmegaConf.load(config_path)
-    conf_dict = OmegaConf.merge(base_type, base_conf)
-    conf_data = OmegaConf.to_container(conf_dict, structured_config_mode=SCMode.INSTANTIATE)
-    conf_data = cast(Config, conf_data)
-    return conf_data
 
-
-__all__ = ["load_config"]
+__all__ = ["Config"]

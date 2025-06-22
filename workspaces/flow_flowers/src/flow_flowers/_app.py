@@ -1,10 +1,13 @@
+import os
 import mlflow.cli
 
+from box import Box
 from cyclopts import App
-from typing import Optional
+from dataclasses import asdict
+from typing import Optional, Dict, cast
 
-from ._param import CommonParam
-from ._config import load_config
+from ._param import *
+from ._config import Config
 
 
 app = App()
@@ -14,16 +17,31 @@ app.command(app_server)
 
 
 @app_server.command(name="start")
-def server_start(param: Optional[CommonParam] = None) -> None:
-    param = param or CommonParam()
-    server = param.config.log.server
+def server_start(param: Optional[ServerParam] = None) -> None:
+    param = param or ServerParam()
+
+    cli_cfg = Box(default_box=True)
+    if param.port is not None:
+        cli_cfg.track.server.port = param.port
+    if param.host is not None:
+        cli_cfg.track.server.host = param.host
+    if param.store is not None:
+        cli_cfg.track.server.store = param.store
+    config = Config.init(param.config_path, cli_cfg.to_dict())
+
+    server = config.track.server
     mlflow.cli.server(["--backend-store-uri", server.store, "--host", server.host, "--port", server.port])
 
 
 @app.command(name="train")
-def train(param: Optional[CommonParam] = None) -> None:
-    param = param or CommonParam()
-    print(param.config)
+def train(param: Optional[TrainParam] = None) -> None:
+    param = param or TrainParam()
 
+    cli_cfg = Box(default_box=True)
+    if param.epochs is not None:
+        cli_cfg.train.epochs = param.epochs
+    config = Config.init(param.config_path, cli_cfg.to_dict())
+
+    print(config)
 
 __all__ = ["app"]
