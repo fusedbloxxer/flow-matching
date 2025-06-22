@@ -21,5 +21,16 @@ explicit = true
 name = "torch-cuda"
 url = "https://download.pytorch.org/whl/cu128"
 
+[tool.ruff]
+line-length = 88
+indent-width = 4
+include = ["pyproject.toml", "*.py", "*.ipynb"]
+
+[tool.ruff.format]
+line-ending = "lf"
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
 [dependency-groups]
-dev = ["ipykernel>=6.29.5"]
+dev = ["ipykernel>=6.29.5", "ipywidgets>=8.1.7", "pre-commit>=4.2.0"]
