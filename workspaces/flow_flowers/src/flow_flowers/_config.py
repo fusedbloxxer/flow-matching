@@ -1,8 +1,9 @@
 import os
 
-from pathlib import Path
 from dataclasses import dataclass
-from typing import Optional, Dict, cast
+from pathlib import Path
+from typing import Dict, Optional, cast
+
 from omegaconf import OmegaConf, SCMode
 
 
