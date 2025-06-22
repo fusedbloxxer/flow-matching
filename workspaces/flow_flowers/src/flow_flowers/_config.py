@@ -14,7 +14,7 @@ class BaseConfig:
 
 @dataclass
 class DataConfig:
-    store: Path
+    path: Path
 
 
 @dataclass

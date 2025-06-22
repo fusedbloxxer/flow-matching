@@ -13,4 +13,4 @@ train:
   epochs: 80
 
 data:
-  store: data
+  path: data

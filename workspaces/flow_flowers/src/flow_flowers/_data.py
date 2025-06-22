@@ -1,18 +1,23 @@
 from pathlib import Path
+from typing import List, Tuple
 
 import torch
 
-from scipy.io import loadmat
+from torch import Tensor
 from torch.utils.data import Dataset
+from torchvision.io import read_image
 
 
 class FlowersDataset(Dataset):
     def __init__(self, *args, path: Path, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.labels_: Tensor = torch.load(path / "labels.pt")
+        self.images_: List[Path] = list(sorted((path / "images").glob("*.jpg"), key=lambda x: x.name))
 
-        labels = loadmat(path / "labels.mat")["labels"]
-        labels = torch.tensor(labels, dtype=torch.int32)
-        print(labels.shape)
+    def __getitem__(self, index: int) -> Tuple[Tensor, Tensor]:
+        image = read_image(str(self.images_[index]))
+        label = self.labels_[index]
+        return image, label
 
     def __len__(self) -> int:
-        return 0
+        return self.labels_.nelement()
