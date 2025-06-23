@@ -1,4 +1,4 @@
-from ._config import Config
+from .config import Config
 
 
 def train(cfg: Config):

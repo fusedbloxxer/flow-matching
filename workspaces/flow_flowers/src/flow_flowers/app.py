@@ -7,9 +7,9 @@ import mlflow.cli
 from cyclopts import App
 from tqdm import trange
 
-from ._config import Config
-from ._data import FlowersDataset
-from ._param import ServerParam, TrainParam
+from .config import Config
+from .data import FlowersDataset
+from .param import ServerParam, TrainParam
 
 
 app = App()
