@@ -12,5 +12,9 @@ track:
 train:
   epochs: 80
 
+model:
+  autoencoder:
+    id: mit-han-lab/dc-ae-f32c32-sana-1.1-diffusers
+
 data:
   path: data
