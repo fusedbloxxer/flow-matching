@@ -11,6 +11,8 @@ class AutoEncoder(nn.Module):
     def __init__(self, *args, id: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.dc_ae = AutoencoderDC.from_pretrained(id)
+        self.dc_ae.requires_grad_(False)
+        self.dc_ae.eval()
 
     def encode(self, x: Tensor) -> Tensor:
         x_enc = self.dc_ae.encode(x)

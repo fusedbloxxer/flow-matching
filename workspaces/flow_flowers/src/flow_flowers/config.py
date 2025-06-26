@@ -11,6 +11,11 @@ class BaseConfig:
 
 
 @dataclass
+class TransformConfig:
+    size: int
+
+
+@dataclass
 class DataConfig:
     path: Path
 
@@ -46,6 +51,7 @@ class ModelConfig:
 
 @dataclass
 class Config:
+    transform: TransformConfig
     model: ModelConfig
     train: TrainConfig
     track: TrackConfig
