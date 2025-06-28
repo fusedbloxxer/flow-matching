@@ -505,6 +505,7 @@ dependencies = [
     { name = "omegaconf" },
     { name = "python-box" },
     { name = "torch" },
+    { name = "torchdiffeq" },
     { name = "torchvision", version = "0.22.1", source = { registry = "https://download.pytorch.org/whl/cu128" }, marker = "platform_machine == 'aarch64' and sys_platform == 'linux'" },
     { name = "torchvision", version = "0.22.1+cu128", source = { registry = "https://download.pytorch.org/whl/cu128" }, marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
     { name = "tqdm" },
@@ -528,6 +529,7 @@ requires-dist = [
     { name = "omegaconf", specifier = ">=2.3.0" },
     { name = "python-box", specifier = ">=7.3.2" },
     { name = "torch", specifier = ">=2.7.1", index = "https://download.pytorch.org/whl/cu128" },
+    { name = "torchdiffeq", specifier = ">=0.2.5" },
     { name = "torchvision", specifier = ">=0.22.1", index = "https://download.pytorch.org/whl/cu128" },
     { name = "tqdm", specifier = ">=4.67.1" },
 ]
