@@ -40,6 +40,12 @@ order-by-type = true
 lines-between-types = 1
 lines-after-imports = 2
 force-wrap-aliases = true
+known-local-folder = ["flow_*"]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"torch.nn.functional" = "F"
+"numpy.typing" = "npt"
+albumentations = "A"
 
 [dependency-groups]
 dev = ["ipykernel>=6.29.5", "ipywidgets>=8.1.7", "pre-commit>=4.2.0"]

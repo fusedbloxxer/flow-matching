@@ -1,5 +1,6 @@
 base:
   store: .store
+  seed: 42
 
 track:
   server:
@@ -11,6 +12,7 @@ track:
 
 train:
   epochs: 80
+  augment: true
 
 model:
   autoencoder:
@@ -18,6 +20,6 @@ model:
 
 data:
   path: data
-
-transform:
-  size: 512
+  preprocess:
+    size: 512
+    crop: "random"
