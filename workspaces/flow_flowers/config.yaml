@@ -17,6 +17,8 @@ train:
 model:
   autoencoder:
     id: mit-han-lab/dc-ae-f32c32-sana-1.1-diffusers
+    std: 2.3715
+    mu: 0.1874
 
 data:
   path: data

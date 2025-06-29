@@ -45,6 +45,8 @@ class TrainConfig:
 
 @dataclass
 class AutoEncoderConfig:
+    std: float
+    mu: float
     id: str
 
 
