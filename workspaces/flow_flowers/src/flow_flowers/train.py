@@ -1,10 +1,35 @@
+from dataclasses import dataclass
+
 import torch
 
 from .config import Config
 from .model import DiCo
+from .param import TrainParam
 
 
-def train(cfg: Config):
+@dataclass
+class Trainer:
+    def __post_init__(self) -> None:
+        pass
+
+    def train_step(self) -> None:
+        pass
+
+    def train(self) -> None:
+        pass
+
+    @torch.no_grad()
+    def eval(self) -> None:
+        pass
+
+    def save_ckpt(self) -> None:
+        pass
+
+    def load_ckpt(self) -> None:
+        pass
+
+
+def train(cfg: Config, cli: TrainParam):
     device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
     # Choose dims

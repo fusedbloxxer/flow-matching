@@ -9,19 +9,34 @@ track:
     host: 127.0.0.1
     name: mlflow
     port: 8080
+  run:
+    experiment: flow_matching
+    name: train_run_001
+    log_every: 1
 
 train:
-  epochs: 80
-  augment: true
+  params:
+    batch_size: 8
+    epochs: 1
+    steps: 1
+    lr: 1e-4
+    seed: 42
+  ckpt:
+    name: ckpt
+    dir: ckpt
+    every: 1
 
 model:
   autoencoder:
     id: mit-han-lab/dc-ae-f32c32-sana-1.1-diffusers
     std: 2.3715
     mu: 0.1874
+  vector_field:
+    in_dim: 32
 
 data:
   path: data
   preprocess:
+    augment: true
+    crop: random
     size: 512
-    crop: "random"

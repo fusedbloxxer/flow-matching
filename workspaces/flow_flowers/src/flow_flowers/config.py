@@ -13,8 +13,9 @@ class BaseConfig:
 
 @dataclass
 class PreprocessConfig:
-    size: int
+    augment: bool
     crop: str
+    size: int
 
 
 @dataclass
@@ -33,14 +34,38 @@ class ServerConfig:
 
 
 @dataclass
+class RunConfig:
+    experiment: str
+    log_every: int
+    name: str
+
+
+@dataclass
 class TrackConfig:
     server: ServerConfig
+    run: RunConfig
+
+
+@dataclass
+class TrainParamsConfig:
+    lr: float
+    seed: int
+    batch_size: int
+    steps: Optional[int] = None
+    epochs: Optional[int] = None
+
+
+@dataclass
+class TrainCkptConfig:
+    every: int
+    name: str
+    dir: Path
 
 
 @dataclass
 class TrainConfig:
-    augment: bool
-    epochs: int
+    params: TrainParamsConfig
+    ckpt: TrainCkptConfig
 
 
 @dataclass
@@ -51,7 +76,13 @@ class AutoEncoderConfig:
 
 
 @dataclass
+class VectorFieldConfig:
+    in_dim: int
+
+
+@dataclass
 class ModelConfig:
+    vector_field: VectorFieldConfig
     autoencoder: AutoEncoderConfig
 
 
