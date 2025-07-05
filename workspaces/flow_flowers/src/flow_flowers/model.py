@@ -183,11 +183,6 @@ class AdaLN(nn.Module):
         return x * (1 + scale) + shift
 
 
-class CondInput(TypedDict):
-    t: Tensor
-    y: Tensor
-
-
 class DiCoBlock(nn.Module):
     def __init__(self, *, h_dim: int, h_size: int, w_size: int, mlp_layers: int, **kwargs) -> None:
         super().__init__()
@@ -197,12 +192,12 @@ class DiCoBlock(nn.Module):
         self.norm_mlp = nn.LayerNorm([h_dim, h_size, w_size])
         self.feed_fwd = MLP(h_dim=h_dim, layers=mlp_layers, kernel=1)
 
-    def forward(self, x: Tensor, **cond: Unpack[CondInput]) -> Tensor:
-        adaLN = self.adaLN.forward(cond["t"] + cond["y"])
+    def forward(self, x: Tensor, c: Tensor) -> Tensor:
+        adaLN = self.adaLN.forward(c)
 
         # MSA
         h_msa = AdaLN.modulate(self.norm_msa(x), shift=adaLN["msa"]["shift"], scale=adaLN["msa"]["scale"])
-        h_msa = self.conv_mod(x)
+        h_msa = self.conv_mod(h_msa)
         h_msa = x + adaLN["msa"]["gate"] * h_msa
 
         # MLP
@@ -211,6 +206,11 @@ class DiCoBlock(nn.Module):
         h_mlp = h_msa + adaLN["mlp"]["gate"] * h_mlp
 
         return h_mlp
+
+
+class CondInput(TypedDict):
+    t: Tensor
+    y: Tensor
 
 
 class DiCo(nn.Module):
@@ -261,12 +261,14 @@ class DiCo(nn.Module):
                 module.apply(_adaLN_init)
 
     def forward(self, x_t: Tensor, **cond: Unpack[CondInput]) -> Tensor:
-        t_embd = self.t_embedder(cond["t"])
-        y_embd = self.y_embedder(cond["y"])
         h_t: Tensor = self.in_proj(x_t)
 
+        t_embd = self.t_embedder(cond["t"])
+        y_embd = self.y_embedder(cond["y"])
+        c_embd = t_embd + y_embd
+
         for layer in self.layers:
-            h_t = layer(h_t, t=t_embd, y=y_embd)
+            h_t = layer(x=h_t, c=c_embd)
 
         h_t = self.out_proj(h_t)
         return h_t
