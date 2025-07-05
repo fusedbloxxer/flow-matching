@@ -47,7 +47,9 @@ class LabelEmbedder(nn.Module):
         self.embd_proj = nn.Embedding(self.num_emb, emb_dim, self.pad_idx)
 
     def forward(self, x: Tensor) -> Tensor:
-        return rearrange(self.embd_proj(x), "b h -> b h 1 1")
+        h = self.embd_proj(x)
+        h = rearrange(h, "b c -> b c 1 1")
+        return h
 
 
 class TimestepEmbedder(nn.Module):
@@ -56,7 +58,9 @@ class TimestepEmbedder(nn.Module):
         self.time_proj = MLP(in_dim=t_dim, out_dim=emb_dim)
 
     def forward(self, x: Tensor) -> Tensor:
-        return self.time_proj(x)
+        h = rearrange(x, "b -> b 1 1 1")
+        h = self.time_proj(h)
+        return h
 
 
 class MLP(nn.Module):
@@ -136,10 +140,10 @@ class ConvModule(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         h: Tensor = x
         h = self.conv_p1(x)
-        h = self.conv_d(x)
+        h = self.conv_d(h)
         h = self.silu(h)
-        h = self.cca(x)
-        h = self.conv_p2(x)
+        h = self.cca(h)
+        h = self.conv_p2(h)
         return h
 
 
@@ -210,16 +214,30 @@ class DiCoBlock(nn.Module):
 
 
 class DiCo(nn.Module):
-    def __init__(self, *, in_dim: int, h_dim: int, out_dim: int, h_size: int, w_size: int, mlp_layers: int, blocks: int, **kwargs) -> None:
+    def __init__(self, *, in_dim: int, h_dim: int, out_dim: int, h_size: int, w_size: int, mlp_layers: int, blocks: int, n_class: int, **kwargs) -> None:
         super().__init__()
+
         self.in_proj = nn.Conv2d(in_dim, h_dim, kernel_size=3, padding=1)
-        self.layers = nn.ModuleList([DiCoBlock(h_dim=h_dim, h_size=h_size, w_size=w_size, mlp_layers=mlp_layers) for _ in range(blocks)])
+
+        self.y_embedder = LabelEmbedder(n_class=n_class, emb_dim=h_dim)
+        self.t_embedder = TimestepEmbedder(t_dim=1, emb_dim=h_dim)
+
+        self.layers = nn.ModuleList()
+        for _ in range(blocks):
+            self.layers.extend(
+                [
+                    DiCoBlock(h_dim=h_dim, h_size=h_size, w_size=w_size, mlp_layers=mlp_layers),
+                ]
+            )
+
         self.out_proj = nn.Sequential(
             *[
                 nn.LayerNorm([h_dim, h_size, w_size]),
                 nn.Conv2d(h_dim, out_dim, kernel_size=3, padding=1),
             ]
         )
+
+        self.initialize_weights()
 
     def initialize_weights(self) -> None:
         def _basic_init(module: nn.Module) -> None:
@@ -236,19 +254,19 @@ class DiCo(nn.Module):
                 nn.init.zeros_(module.bias)
             nn.init.zeros_(module.weight)
 
-        # Init layers with uniform xavier
         self.apply(_basic_init)
 
-        # Init AdaLN-Zero
         for module in self.modules():
             if isinstance(module, AdaLN):
                 module.apply(_adaLN_init)
 
     def forward(self, x_t: Tensor, **cond: Unpack[CondInput]) -> Tensor:
+        t_embd = self.t_embedder(cond["t"])
+        y_embd = self.y_embedder(cond["y"])
         h_t: Tensor = self.in_proj(x_t)
 
         for layer in self.layers:
-            h_t = layer(h_t, **cond)
+            h_t = layer(h_t, t=t_embd, y=y_embd)
 
         h_t = self.out_proj(h_t)
         return h_t

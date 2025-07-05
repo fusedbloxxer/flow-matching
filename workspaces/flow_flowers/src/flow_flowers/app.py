@@ -1,15 +1,12 @@
-from dataclasses import asdict
 from typing import Optional
 
-import matplotlib.pyplot as plt
 import mlflow.cli
 
 from cyclopts import App
-from tqdm import trange
 
 from .config import Config
-from .data import FlowersDataset
 from .param import ServerParam, TrainParam
+from .train import train as train_function
 
 
 app = App()
@@ -38,15 +35,7 @@ def server_start(param: Optional[ServerParam] = None) -> None:
 def train(param: Optional[TrainParam] = None) -> None:
     param = param or TrainParam()
     config = Config.init(param.config_path, param.get_cli_cfg())
-    print(config.data)
-    data = FlowersDataset(**asdict(config.data))
-    image, label = data[0]
-
-    for i in trange(len(data)):
-        image, label = data[i]
-        plt.imshow(image.permute((1, 2, 0)))
-        plt.title(str(label.item()))
-        plt.show()
+    train_function(config)
 
 
 __all__ = ["app"]
