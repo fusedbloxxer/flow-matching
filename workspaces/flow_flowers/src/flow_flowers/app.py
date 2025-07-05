@@ -35,8 +35,7 @@ def server_start(param: Optional[ServerParam] = None) -> None:
 def train(param: Optional[TrainParam] = None) -> None:
     param = param or TrainParam()
     config = Config.init(param.config_path, param.get_cli_cfg())
-
-    train_function(config, param)
+    train_function(config)
 
 
 __all__ = ["app"]

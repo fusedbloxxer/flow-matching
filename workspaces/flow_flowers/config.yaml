@@ -22,6 +22,7 @@ train:
     lr: 1e-4
     seed: 42
   ckpt:
+    resume: null
     name: ckpt
     dir: ckpt
     every: 1

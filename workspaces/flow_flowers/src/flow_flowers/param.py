@@ -47,7 +47,7 @@ class ServerParam(CommonParam, ConfigAdapter):
 @dataclass
 class TrainParam(CommonParam, ConfigAdapter):
     lr: Annotated[Optional[float], Parameter(name=["--lr"], help="Learning rate for training", group=train_group)] = None
-    seed: Annotated[Optional[int], Parameter(name=["--seed", "-s"], help="Random seed for reproducibility", group=log_group)] = None
+    seed: Annotated[Optional[int], Parameter(name=["--seed"], help="Random seed for reproducibility", group=log_group)] = None
     steps: Annotated[Optional[int], Parameter(name=["--steps", "-s"], help="The number of steps for training", group=train_group)] = None
     epochs: Annotated[Optional[int], Parameter(name=["--epochs", "-e"], help="The number of epochs for training", group=train_group)] = None
     batch_size: Annotated[Optional[int], Parameter(name=["--batch-size", "-b"], help="The batch size for training", group=train_group)] = None

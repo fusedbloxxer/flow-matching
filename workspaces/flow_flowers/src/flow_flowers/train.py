@@ -4,7 +4,6 @@ import torch
 
 from .config import Config
 from .model import DiCo
-from .param import TrainParam
 
 
 @dataclass
@@ -29,7 +28,7 @@ class Trainer:
         pass
 
 
-def train(cfg: Config, cli: TrainParam):
+def train(cfg: Config):
     device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
     # Choose dims

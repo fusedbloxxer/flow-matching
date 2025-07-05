@@ -57,9 +57,10 @@ class TrainParamsConfig:
 
 @dataclass
 class TrainCkptConfig:
-    every: int
-    name: str
     dir: Path
+    name: str
+    every: int
+    resume: Optional[str] = None
 
 
 @dataclass
