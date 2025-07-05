@@ -8,6 +8,7 @@ from cyclopts import Group, Parameter, validators
 
 
 log_group = Group(name="Logging")
+model_group = Group(name="Model")
 data_group = Group(name="Dataset")
 train_group = Group(name="Training")
 ckpt_group = Group(name="Checkpoint")
@@ -52,6 +53,14 @@ class TrainParam(CommonParam, ConfigAdapter):
     epochs: Annotated[Optional[int], Parameter(name=["--epochs", "-e"], help="The number of epochs for training", group=train_group)] = None
     batch_size: Annotated[Optional[int], Parameter(name=["--batch-size", "-b"], help="The batch size for training", group=train_group)] = None
 
+    n_class: Annotated[Optional[int], Parameter(name=["--num-classes"], help="Number of classes in the dataset", group=model_group)] = None
+    h_dim: Annotated[Optional[int], Parameter(name=["--hidden-dim"], help="Dimension of the hidden layers in the model", group=model_group)] = None
+    blocks: Annotated[Optional[int], Parameter(name=["--dico-layers"], help="Number of layers in the DiCo model", group=model_group)] = None
+    mlp_layers: Annotated[Optional[int], Parameter(name=["--mlp-layers"], help="Number of layers in the feedforward layer", group=model_group)] = None
+    in_dim: Annotated[Optional[int], Parameter(name=["--input-dim"], help="Input dimension of the model", group=model_group)] = None
+    w_size: Annotated[Optional[int], Parameter(name=["--input-width"], help="Input width of the model", group=model_group)] = None
+    h_size: Annotated[Optional[int], Parameter(name=["--input-height"], help="Input height of the model", group=model_group)] = None
+
     run_name: Annotated[Optional[str], Parameter(name=["--run-name"], help="The name of the MLflow run", group=log_group)] = None
     exp_name: Annotated[Optional[str], Parameter(name=["--exp-name"], help="Experiment name for MLflow tracking", group=log_group)] = None
     log_every: Annotated[Optional[int], Parameter(name=["--log-every"], help="Log metrics every N steps/epochs", group=log_group)] = None
@@ -80,6 +89,21 @@ class TrainParam(CommonParam, ConfigAdapter):
             cli_cfg.train.params.epochs = self.epochs
         if self.batch_size is not None:
             cli_cfg.train.params.batch_size = self.batch_size
+
+        if self.n_class is not None:
+            cli_cfg.model.vector_field.n_class = self.n_class
+        if self.h_dim is not None:
+            cli_cfg.model.vector_field.h_dim = self.h_dim
+        if self.blocks is not None:
+            cli_cfg.model.vector_field.blocks = self.blocks
+        if self.mlp_layers is not None:
+            cli_cfg.model.vector_field.mlp_layers = self.mlp_layers
+        if self.in_dim is not None:
+            cli_cfg.model.vector_field.in_dim = self.in_dim
+        if self.w_size is not None:
+            cli_cfg.model.vector_field.w_size = self.w_size
+        if self.h_size is not None:
+            cli_cfg.model.vector_field.h_size = self.h_size
 
         if self.crop_size is not None:
             cli_cfg.data.preprocess.size = self.crop_size

@@ -14,6 +14,7 @@ class BaseConfig:
 @dataclass
 class PreprocessConfig:
     augment: bool
+    norm: bool
     crop: str
     size: int
 
@@ -78,7 +79,14 @@ class AutoEncoderConfig:
 
 @dataclass
 class VectorFieldConfig:
+    mlp_layers: int
+    n_class: int
+    out_dim: int
+    h_size: int
+    w_size: int
     in_dim: int
+    blocks: int
+    h_dim: int
 
 
 @dataclass

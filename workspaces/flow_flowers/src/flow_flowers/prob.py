@@ -50,8 +50,8 @@ class DatasetSampleable(Sampleable):
 
 @dataclass(kw_only=True)
 class ProbPath(ABC):
-    p_init: Sampleable
-    p_data: Sampleable
+    p_init: Optional[Sampleable] = None
+    p_data: Optional[Sampleable] = None
 
     @abstractmethod
     def prob_path_flow(self, *, x_0: Tensor, x_1: Tensor, t: Tensor) -> Tensor:

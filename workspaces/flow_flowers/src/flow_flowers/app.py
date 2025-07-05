@@ -6,7 +6,7 @@ from cyclopts import App
 
 from .config import Config
 from .param import ServerParam, TrainParam
-from .train import train as train_function
+from .train import train
 
 
 app = App()
@@ -32,10 +32,10 @@ def server_start(param: Optional[ServerParam] = None) -> None:
 
 
 @app.command(name="train")
-def train(param: Optional[TrainParam] = None) -> None:
+def train_model(param: Optional[TrainParam] = None) -> None:
     param = param or TrainParam()
     config = Config.init(param.config_path, param.get_cli_cfg())
-    train_function(config)
+    train(config)
 
 
 __all__ = ["app"]

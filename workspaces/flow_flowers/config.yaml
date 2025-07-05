@@ -33,11 +33,19 @@ model:
     std: 2.3715
     mu: 0.1874
   vector_field:
+    mlp_layers: 4
+    n_class: 102
+    out_dim: 32
+    h_dim: 256
+    h_size: 16
+    w_size: 16
     in_dim: 32
+    blocks: 8
 
 data:
   path: data
   preprocess:
     augment: true
     crop: random
+    norm: true
     size: 512

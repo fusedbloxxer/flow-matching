@@ -1,21 +1,37 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 import torch
 
-from .config import Config
-from .model import DiCo
+from torch.nn import Module
+from torch.utils.data import Dataset
+
+from .config import Config, TrackConfig, TrainCkptConfig, TrainParamsConfig
+from .data import FlowersDataset, get_transform
+from .model import AutoEncoder, DiCo
+from .prob import OTProbPath, ProbPath
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Trainer:
+    u_theta: Module
+    vae: AutoEncoder
+    dataset: Dataset
+    prob_path: ProbPath
+    ckpt_config: TrainCkptConfig
+
     def __post_init__(self) -> None:
         pass
 
     def train_step(self) -> None:
         pass
 
-    def train(self) -> None:
-        pass
+    def train(self, *, params: TrainParamsConfig, track: TrackConfig) -> None:
+        assert params.epochs, "Number of epochs must be specified"
+
+        # dataloader = DataLoader(self.dataset, batch_size=params.batch_size, shuffle=True)
+
+        for epoch in range(params.epochs):
+            pass
 
     @torch.no_grad()
     def eval(self) -> None:
@@ -29,27 +45,27 @@ class Trainer:
 
 
 def train(cfg: Config):
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    # Choose dims
-    B, C, H, W, N = 1, 32, 16, 16, 99
+    # Create models
+    vae = AutoEncoder(**asdict(cfg.model.autoencoder))
+    u_theta = DiCo(**asdict(cfg.model.vector_field))
 
-    # Sample data
-    t = torch.rand((B))
-    y = torch.randint_like(t, N, dtype=torch.int32)
-    x_t = torch.randn((B, C, H, W))
+    # Create dataset
+    preprocess = get_transform(**asdict(cfg.data.preprocess))
+    dataset = FlowersDataset(path=cfg.data.path, transform=preprocess)
 
-    # Create model
-    model = DiCo(in_dim=32, h_dim=128, out_dim=32, h_size=16, w_size=16, mlp_layers=4, blocks=24, n_class=N)
+    # Optimal Transport Path
+    prob_path = OTProbPath()
 
-    # Send data & model to GPU
-    x_t = x_t.to(device)
-    t = t.to(device)
-    y = y.to(device)
-    model.to(device)
+    # Create Trainer
+    trainer = Trainer(
+        ckpt_config=cfg.train.ckpt,
+        prob_path=prob_path,
+        dataset=dataset,
+        u_theta=u_theta,
+        vae=vae,
+    )
 
-    # Forward pass through the model
-    output = model.forward(x_t, t=t, y=y)
-
-    # Print the output shape to verify
-    print(output.shape)
+    # Train
+    trainer.train(params=cfg.train.params, track=cfg.track)
