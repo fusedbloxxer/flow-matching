@@ -17,14 +17,16 @@ track:
 train:
   params:
     batch_size: 8
-    epochs: 1
+    epochs: null
     steps: 1
     lr: 1e-4
-    seed: 42
   ckpt:
-    resume: null
+    resume: false
     name: ckpt
     dir: ckpt
+    every: 1
+  eval:
+    split: 0.1
     every: 1
 
 model:

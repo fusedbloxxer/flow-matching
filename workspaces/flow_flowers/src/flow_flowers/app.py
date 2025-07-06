@@ -1,3 +1,5 @@
+import os
+
 from typing import Optional
 
 import mlflow.cli
@@ -35,6 +37,7 @@ def server_start(param: Optional[ServerParam] = None) -> None:
 def train_model(param: Optional[TrainParam] = None) -> None:
     param = param or TrainParam()
     config = Config.init(param.config_path, param.get_cli_cfg())
+    os.chdir(param.config_path.parent)
     train(config)
 
 

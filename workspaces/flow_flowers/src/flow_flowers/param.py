@@ -52,6 +52,8 @@ class TrainParam(CommonParam, ConfigAdapter):
     steps: Annotated[Optional[int], Parameter(name=["--steps", "-s"], help="The number of steps for training", group=train_group)] = None
     epochs: Annotated[Optional[int], Parameter(name=["--epochs", "-e"], help="The number of epochs for training", group=train_group)] = None
     batch_size: Annotated[Optional[int], Parameter(name=["--batch-size", "-b"], help="The batch size for training", group=train_group)] = None
+    eval_every: Annotated[Optional[int], Parameter(name=["--eval-every"], help="Evaluate the model every N steps", group=train_group)] = None
+    eval_split: Annotated[Optional[float], Parameter(name=["--eval-split"], help="Fraction of data to use for evaluation", group=train_group)] = None
 
     n_class: Annotated[Optional[int], Parameter(name=["--num-classes"], help="Number of classes in the dataset", group=model_group)] = None
     h_dim: Annotated[Optional[int], Parameter(name=["--hidden-dim"], help="Dimension of the hidden layers in the model", group=model_group)] = None
@@ -68,7 +70,7 @@ class TrainParam(CommonParam, ConfigAdapter):
     ckpt_dir: Annotated[Optional[Path], Parameter(name=["--ckpt-dir"], help="The directory to save checkpoints", group=ckpt_group)] = None
     ckpt_name: Annotated[Optional[str], Parameter(name=["--ckpt-name"], help="The name of the checkpoint file", group=ckpt_group)] = None
     ckpt_every: Annotated[Optional[int], Parameter(name=["--ckpt-every"], help="Save checkpoint every N steps/epochs", group=ckpt_group)] = None
-    resume_from: Annotated[Optional[str], Parameter(name=["--resume"], help="Resume training from a checkpoint file", group=ckpt_group)] = None
+    ckpt_resume: Annotated[Optional[bool], Parameter(name=["--ckpt-resume"], help="Resume training from checkpoint", group=ckpt_group)] = None
 
     augment: Annotated[Optional[bool], Parameter(name=["--augment"], help="Enable data augmentation", group=data_group)] = None
     crop_size: Annotated[Optional[int], Parameter(name=["--crop-size"], help="Size to crop images to", group=data_group)] = None
@@ -82,13 +84,17 @@ class TrainParam(CommonParam, ConfigAdapter):
         if self.lr is not None:
             cli_cfg.train.params.lr = self.lr
         if self.seed is not None:
-            cli_cfg.train.params.seed = self.seed
+            cli_cfg.base.seed = self.seed
         if self.steps is not None:
             cli_cfg.train.params.steps = self.steps
         if self.epochs is not None:
             cli_cfg.train.params.epochs = self.epochs
         if self.batch_size is not None:
             cli_cfg.train.params.batch_size = self.batch_size
+        if self.eval_every is not None:
+            cli_cfg.train.eval.every = self.eval_every
+        if self.eval_split is not None:
+            cli_cfg.train.eval.split = self.eval_split
 
         if self.n_class is not None:
             cli_cfg.model.vector_field.n_class = self.n_class
@@ -125,8 +131,8 @@ class TrainParam(CommonParam, ConfigAdapter):
             cli_cfg.train.ckpt.name = self.ckpt_name
         if self.ckpt_every is not None:
             cli_cfg.train.ckpt.every = self.ckpt_every
-        if self.resume_from is not None:
-            cli_cfg.train.ckpt.resume = self.resume_from
+        if self.ckpt_resume is not None:
+            cli_cfg.train.ckpt.resume = self.ckpt_resume
         return cli_cfg.to_dict()
 
 

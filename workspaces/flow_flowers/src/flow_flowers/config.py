@@ -50,7 +50,6 @@ class TrackConfig:
 @dataclass
 class TrainParamsConfig:
     lr: float
-    seed: int
     batch_size: int
     steps: Optional[int] = None
     epochs: Optional[int] = None
@@ -61,13 +60,20 @@ class TrainCkptConfig:
     dir: Path
     name: str
     every: int
-    resume: Optional[str] = None
+    resume: bool
+
+
+@dataclass
+class TrainEvalConfig:
+    split: float
+    every: int
 
 
 @dataclass
 class TrainConfig:
     params: TrainParamsConfig
     ckpt: TrainCkptConfig
+    eval: TrainEvalConfig
 
 
 @dataclass
