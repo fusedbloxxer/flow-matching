@@ -47,7 +47,8 @@ class LabelEmbedder(nn.Module):
         self.embd_proj = nn.Embedding(self.num_emb, emb_dim, self.pad_idx)
 
     def forward(self, x: Tensor) -> Tensor:
-        h = self.embd_proj(x)
+        h = rearrange(x, "b 1 1 1 -> b")
+        h = self.embd_proj(h)
         h = rearrange(h, "b c -> b c 1 1")
         return h
 
@@ -58,8 +59,7 @@ class TimestepEmbedder(nn.Module):
         self.time_proj = MLP(in_dim=t_dim, out_dim=emb_dim)
 
     def forward(self, x: Tensor) -> Tensor:
-        h = rearrange(x, "b -> b 1 1 1")
-        h = self.time_proj(h)
+        h = self.time_proj(x)
         return h
 
 
@@ -190,7 +190,7 @@ class DiCoBlock(nn.Module):
         self.norm_msa = nn.LayerNorm([h_dim, h_size, w_size])
         self.conv_mod = ConvModule(channels=h_dim)
         self.norm_mlp = nn.LayerNorm([h_dim, h_size, w_size])
-        self.feed_fwd = MLP(h_dim=h_dim, layers=mlp_layers, kernel=1)
+        self.feed_fwd = MLP(h_dim=h_dim, layers=mlp_layers, kernel=3)
 
     def forward(self, x: Tensor, c: Tensor) -> Tensor:
         adaLN = self.adaLN.forward(c)

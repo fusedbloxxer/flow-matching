@@ -1,5 +1,6 @@
 base:
   store: .store
+  debug: false
   seed: 42
 
 track:
@@ -13,12 +14,14 @@ track:
     experiment: flow_matching
     name: train_run_001
     log_every: 1
+    nest: null
+    id: null
 
 train:
   params:
-    batch_size: 8
+    batch_size: 64
     epochs: null
-    steps: 1
+    steps: null
     lr: 1e-4
   ckpt:
     resume: false
@@ -42,7 +45,7 @@ model:
     h_size: 16
     w_size: 16
     in_dim: 32
-    blocks: 8
+    blocks: 20
 
 data:
   path: data

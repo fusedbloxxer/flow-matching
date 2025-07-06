@@ -3,7 +3,7 @@ import random
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Generator, Iterable
 
 import numpy.typing as npt
 import torch
@@ -68,6 +68,16 @@ def find_and_chdir(filename: str) -> None:
         if path == path_next:
             raise FileNotFoundError(f"File {filename} was not found!")
         path = path_next
+
+
+def iter_loop[T](iterable: Iterable[T]) -> Generator[T]:
+    it = iter(iterable)
+    while True:
+        try:
+            yield next(it)
+        except StopIteration:
+            it = iter(iterable)
+            yield next(it)
 
 
 def set_manual_seed(seed: int) -> None:

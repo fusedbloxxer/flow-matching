@@ -8,6 +8,7 @@ from omegaconf import OmegaConf, SCMode
 @dataclass
 class BaseConfig:
     store: Path
+    debug: bool
     seed: int
 
 
@@ -36,9 +37,11 @@ class ServerConfig:
 
 @dataclass
 class RunConfig:
-    experiment: str
-    log_every: int
     name: str
+    log_every: int
+    experiment: str
+    id: Optional[str] = None
+    nest: Optional[bool] = None
 
 
 @dataclass

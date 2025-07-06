@@ -21,6 +21,7 @@ def server_start(param: Optional[ServerParam] = None) -> None:
     param = param or ServerParam()
     config = Config.init(param.config_path, param.get_cli_cfg())
     server = config.track.server
+    os.chdir(param.config_path.parent)
     mlflow.cli.server(
         [
             "--backend-store-uri",

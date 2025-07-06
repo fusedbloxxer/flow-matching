@@ -14,6 +14,13 @@ train_group = Group(name="Training")
 ckpt_group = Group(name="Checkpoint")
 
 
+def validate_crop_type(typ, val):
+    if val is None:
+        return
+    if val not in ["random", "center"]:
+        raise ValueError(f"Invalid value {val} for {typ}. Expected one of ['random', 'center']")
+
+
 class ConfigAdapter(ABC):
     @abstractmethod
     def get_cli_cfg(self) -> Dict:
@@ -47,6 +54,8 @@ class ServerParam(CommonParam, ConfigAdapter):
 @Parameter("*")
 @dataclass
 class TrainParam(CommonParam, ConfigAdapter):
+    debug: Annotated[Optional[bool], Parameter(name=["--debug"], help="Enable debug mode")] = None
+
     lr: Annotated[Optional[float], Parameter(name=["--lr"], help="Learning rate for training", group=train_group)] = None
     seed: Annotated[Optional[int], Parameter(name=["--seed"], help="Random seed for reproducibility", group=log_group)] = None
     steps: Annotated[Optional[int], Parameter(name=["--steps", "-s"], help="The number of steps for training", group=train_group)] = None
@@ -63,6 +72,8 @@ class TrainParam(CommonParam, ConfigAdapter):
     w_size: Annotated[Optional[int], Parameter(name=["--input-width"], help="Input width of the model", group=model_group)] = None
     h_size: Annotated[Optional[int], Parameter(name=["--input-height"], help="Input height of the model", group=model_group)] = None
 
+    run_id: Annotated[Optional[str], Parameter(name=["--run-id"], help="The ID of the MLflow run", group=log_group)] = None
+    run_nest: Annotated[Optional[bool], Parameter(name=["--run-nest"], help="Whether to nest the run under a parent run", group=log_group)] = None
     run_name: Annotated[Optional[str], Parameter(name=["--run-name"], help="The name of the MLflow run", group=log_group)] = None
     exp_name: Annotated[Optional[str], Parameter(name=["--exp-name"], help="Experiment name for MLflow tracking", group=log_group)] = None
     log_every: Annotated[Optional[int], Parameter(name=["--log-every"], help="Log metrics every N steps/epochs", group=log_group)] = None
@@ -74,13 +85,16 @@ class TrainParam(CommonParam, ConfigAdapter):
 
     augment: Annotated[Optional[bool], Parameter(name=["--augment"], help="Enable data augmentation", group=data_group)] = None
     crop_size: Annotated[Optional[int], Parameter(name=["--crop-size"], help="Size to crop images to", group=data_group)] = None
-    crop_type: Annotated[Optional[str], Parameter(name=["--crop-type"], help="Type of cropping (random, center)", group=data_group)] = None
+    crop_type: Annotated[Optional[str], Parameter(name=["--crop-type"], help="Type of cropping (random, center)", validator=validate_crop_type, group=data_group)] = None
 
     def get_cli_cfg(self) -> Dict:
         if self.steps is not None and self.epochs is not None:
             raise ValueError("Cannot specify both steps and epochs")
 
         cli_cfg = Box(default_box=True)
+        if self.debug is not None:
+            cli_cfg.base.debug = self.debug
+
         if self.lr is not None:
             cli_cfg.train.params.lr = self.lr
         if self.seed is not None:
@@ -118,6 +132,10 @@ class TrainParam(CommonParam, ConfigAdapter):
         if self.augment is not None:
             cli_cfg.data.preprocess.augment = self.augment
 
+        if self.run_id is not None:
+            cli_cfg.track.run.id = self.run_id
+        if self.run_nest is not None:
+            cli_cfg.track.run.nest = self.run_nest
         if self.run_name is not None:
             cli_cfg.track.run.name = self.run_name
         if self.log_every is not None:

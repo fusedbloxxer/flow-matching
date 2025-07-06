@@ -1,5 +1,3 @@
-# Runtime storage
-.storage/
-
-# Dataset storage
+.store/
+ckpt/
 data/
