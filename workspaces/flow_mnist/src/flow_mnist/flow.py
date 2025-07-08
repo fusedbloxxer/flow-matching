@@ -1,10 +1,11 @@
 import abc
+
+from dataclasses import dataclass
+from typing import Any, Callable, Tuple, cast
+
 import torch
 
 from einops import rearrange
-from dataclasses import dataclass
-from typing import Callable, Tuple, Any, cast
-
 from torch import Tensor
 from torch.utils.data import Dataset
 

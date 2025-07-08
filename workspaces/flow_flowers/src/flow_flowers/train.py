@@ -20,7 +20,7 @@ from .config import Config
 from .data import FlowersDataset, get_transform
 from .model import AutoEncoder, DiCo
 from .prob import OTProbPath, ProbPath
-from .utils import iter_loop, set_manual_seed
+from .utils import batch_op, iter_loop, set_manual_seed
 
 
 class DeviceMap(TypedDict):
@@ -30,12 +30,13 @@ class DeviceMap(TypedDict):
 
 @dataclass(kw_only=True)
 class Trainer:
-    u_theta: Module
+    cfg: float
+    u_theta: DiCo
     vae: AutoEncoder
     dataset: Dataset
-    prob_path: ProbPath
     ckpt_dir: Path
     track_uri: str
+    prob_path: ProbPath
     experiment_name: str
     run_params: Dict[str, Any]
     devices: InitVar[DeviceMap] = field(default=cast(Any, {}))
@@ -51,6 +52,7 @@ class Trainer:
         *,
         bs: int,
         lr: float,
+        bs_vae: int,
         run_name: str,
         ckpt_name: str,
         ckpt_every: int,
@@ -68,8 +70,8 @@ class Trainer:
             raise ValueError("Either steps or epochs should be specified")
         if steps is not None and epochs is not None:
             raise ValueError("Only one of steps or epochs should be specified")
-        if ckpt_resume and not self.ckpt_dir.exists():
-            raise ValueError("Checkpoint directory does not exist")
+        if not self.ckpt_dir.exists():
+            self.ckpt_dir.mkdir(parents=True)
         if ckpt_resume and not (self.ckpt_dir / f"{ckpt_name}.pt").exists():
             raise ValueError("Checkpoint file does not exist")
         if run_id is None and ckpt_resume:
@@ -94,9 +96,13 @@ class Trainer:
         if not ckpt_resume:
             start_step = 0
 
+        # Save params for training loop
+        self._bs_vae = bs_vae
+
         # Create data loaders
-        self._train_dl, self._eval_dl = self.create_loaders(eval_split, batch_size=bs)
-        self._train_dl = iter(iter_loop(self._train_dl))
+        train_dl, eval_dl = self.create_loaders(eval_split, batch_size=bs)
+        self._train_dl = iter_loop(train_dl)
+        self._eval_dl = eval_dl
 
         # Resume tracking run
         run_opts = Box()
@@ -107,6 +113,7 @@ class Trainer:
 
         # Overwrite run params
         run_params = Box(self.run_params)
+        run_params.batch_size_vae = bs_vae
         run_params.batch_size = bs
         run_params.steps = steps
         run_params.seed = seed
@@ -134,33 +141,42 @@ class Trainer:
                     self.save_ckpt(f"{ckpt_name}_step_{step + 1}")
 
     def train_step(self, step: int) -> None:
+        # TODO: Add MLFlow logs
         self.u_theta.train()
 
-        x_1, y = next(iter(self._train_dl))
+        # Sample (x_1_latent, y) ~ p_data
+        x_1, y = next(self._train_dl)
         x_1: Tensor = x_1.to(self.device_map["vae"])
+        x_1_latent = batch_op(x_1, self._bs_vae, lambda x: self.vae.encode(x).to(self.device_map["u_theta"]))
+
+        # Apply CFG using pad_idx with drop probability
         y: Tensor = y.to(self.device_map["u_theta"])
+        if self.cfg > 0.0:
+            drop_mask = torch.rand(y.size(0), device=self.device_map["u_theta"])
+            drop_mask = drop_mask <= self.cfg
+            y[drop_mask] = self.u_theta.y_embedder.pad_idx
         y = einops.rearrange(y, "b -> b 1 1 1")
 
-        vae_bs = 16
-        x_1_latents = []
-        for i in range(0, x_1.shape[0], vae_bs):
-            mini_batch = x_1[i : i + vae_bs]
-            x_1_latent_mini = self.vae.encode(mini_batch)
-            x_1_latents.append(x_1_latent_mini.to(self.device_map["u_theta"]))
-        x_1_latent = torch.cat(x_1_latents, dim=0)
-
+        # Sample t ~ U[0, 1)
         t = torch.rand((x_1.shape[0], 1, 1, 1), device=self.device_map["u_theta"])
+
+        # Sample x_0 ~ p_init
         x_0 = torch.randn_like(x_1_latent, device=self.device_map["u_theta"])
+
+        # Sample x_t ~ p_t(*|x_1)
         x_t_latent = self.prob_path.prob_path_flow(x_0=x_0, x_1=x_1_latent, t=t)
 
+        # Learn CFM objective
+        v_true = self.prob_path.target(x_1=x_1_latent, x_0=x_0)
         v_pred = self.u_theta(x_t=x_t_latent, t=t, y=y)
-        v_true = self.prob_path.target(x_1=x_1_latent, x_t=x_t_latent, t=t)
         loss = F.mse_loss(v_pred, v_true)
 
+        # Backprop
         self._optimizer.zero_grad()
         loss.backward()
         self._optimizer.step()
 
+        # Logging
         mlflow.log_metric(key="train_loss", value=loss.item(), step=step, synchronous=False)
 
     @torch.no_grad()
@@ -178,24 +194,29 @@ class Trainer:
 
     def create_loaders(self, eval_split: float, batch_size: int) -> Tuple[DataLoader, DataLoader]:
         eval_ds, train_ds = random_split(self.dataset, lengths=[eval_split, 1.0 - eval_split])
-        train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, drop_last=True)
+        train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=8, pin_memory=True, persistent_workers=True, prefetch_factor=2)
         eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False)
         return train_dl, eval_dl
 
     def create_optimizer(self, lr: float) -> Optimizer:
-        return AdamW(self.u_theta.parameters(), lr=lr)
+        return AdamW(self.u_theta.parameters(), lr=lr, weight_decay=0.0)
 
 
 def train(cfg: Config):
     if cfg.base.debug:
         pp(asdict(cfg), width=1, sort_dicts=False)
 
-    # Initialize models and dataset
+    # Setup environment
+    torch.backends.cudnn.allow_tf32 = True
+    torch.backends.cuda.matmul.allow_tf32 = True
+
+    # Initialize dataset
     preprocess = get_transform(**asdict(cfg.data.preprocess))
     dataset = FlowersDataset(path=cfg.data.path, transform=preprocess)
+
+    # Initialize models
     vae = AutoEncoder(**asdict(cfg.model.autoencoder))
     u_theta = DiCo(**asdict(cfg.model.vector_field))
-    prob_path = OTProbPath()
 
     # Gather run parameters
     run_params = Box()
@@ -217,17 +238,23 @@ def train(cfg: Config):
     run_params.crop_type = cfg.data.preprocess.crop
     run_params.norm = cfg.data.preprocess.norm
 
+    if cfg.model.ddt:
+        run_params.ddt = cfg.model.ddt.active
+        run_params.ddt_encoder_layers = cfg.model.ddt.encoder
+        run_params.ddt_decoder_layers = cfg.model.ddt.decoder
+
     # Initialize Trainer
     trainer = Trainer(
         vae=vae,
         u_theta=u_theta,
-        prob_path=prob_path,
         dataset=dataset,
+        prob_path=OTProbPath(),
+        cfg=cfg.train.params.cfg,
         ckpt_dir=cfg.train.ckpt.dir,
         track_uri=cfg.track.server.uri,
         run_params=run_params.to_dict(),
         experiment_name=cfg.track.run.experiment,
-        devices={"u_theta": "cuda:0", "vae": "cuda:1"},
+        devices={"u_theta": "cuda:0", "vae": "cuda:0"},
     )
 
     # Launch job
@@ -235,6 +262,7 @@ def train(cfg: Config):
         seed=cfg.base.seed,
         lr=cfg.train.params.lr,
         bs=cfg.train.params.batch_size,
+        bs_vae=cfg.train.params.vae_batch_size,
         steps=cfg.train.params.steps,
         epochs=cfg.train.params.epochs,
         eval_split=cfg.train.eval.split,

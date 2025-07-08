@@ -42,7 +42,7 @@ class AutoEncoder(nn.Module):
 class LabelEmbedder(nn.Module):
     def __init__(self, *, n_class: int, emb_dim: int, **kwargs) -> None:
         super().__init__()
-        self.pad_idx = 0
+        self.pad_idx = n_class
         self.num_emb = n_class + 1
         self.embd_proj = nn.Embedding(self.num_emb, emb_dim, self.pad_idx)
 
@@ -56,14 +56,14 @@ class LabelEmbedder(nn.Module):
 class TimestepEmbedder(nn.Module):
     def __init__(self, *, t_dim: int, emb_dim: int, **kwargs) -> None:
         super().__init__()
-        self.time_proj = MLP(in_dim=t_dim, out_dim=emb_dim)
+        self.time_proj = ConvMLP(in_dim=t_dim, out_dim=emb_dim)
 
     def forward(self, x: Tensor) -> Tensor:
         h = self.time_proj(x)
         return h
 
 
-class MLP(nn.Module):
+class ConvMLP(nn.Module):
     def __init__(self, *, in_dim: Optional[int] = None, h_dim: Optional[int] = None, out_dim: Optional[int] = None, layers: int = 1, kernel: int = 1, **kwargs) -> None:
         super().__init__()
 
@@ -100,7 +100,6 @@ class MLP(nn.Module):
                 self.mlp.extend(
                     [
                         nn.Conv2d(h_dim, out_dim, kernel_size=kernel, padding=padding),
-                        nn.SiLU(),
                     ]
                 )
                 continue
@@ -190,7 +189,7 @@ class DiCoBlock(nn.Module):
         self.norm_msa = nn.LayerNorm([h_dim, h_size, w_size])
         self.conv_mod = ConvModule(channels=h_dim)
         self.norm_mlp = nn.LayerNorm([h_dim, h_size, w_size])
-        self.feed_fwd = MLP(h_dim=h_dim, layers=mlp_layers, kernel=3)
+        self.feed_fwd = ConvMLP(h_dim=h_dim, layers=mlp_layers, kernel=1)
 
     def forward(self, x: Tensor, c: Tensor) -> Tensor:
         adaLN = self.adaLN.forward(c)
@@ -247,18 +246,23 @@ class DiCo(nn.Module):
                 nn.init.zeros_(module.bias)
             nn.init.xavier_uniform_(module.weight)
 
-        def _adaLN_init(module: nn.Module) -> None:
+        def _zero_init(module: nn.Module) -> None:
             if not isinstance(module, nn.Conv2d):
                 return
             if module.bias is not None:
                 nn.init.zeros_(module.bias)
             nn.init.zeros_(module.weight)
 
+        # Initialize Layers
         self.apply(_basic_init)
 
+        # Zero-init AdaLN
         for module in self.modules():
             if isinstance(module, AdaLN):
-                module.apply(_adaLN_init)
+                module.apply(_zero_init)
+
+        # Zero-init Final Layer
+        self.out_proj.apply(_zero_init)
 
     def forward(self, x_t: Tensor, **cond: Unpack[CondInput]) -> Tensor:
         h_t: Tensor = self.in_proj(x_t)

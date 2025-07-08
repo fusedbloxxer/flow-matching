@@ -53,7 +53,9 @@ class TrackConfig:
 @dataclass
 class TrainParamsConfig:
     lr: float
+    cfg: float
     batch_size: int
+    vae_batch_size: int
     steps: Optional[int] = None
     epochs: Optional[int] = None
 
@@ -99,9 +101,17 @@ class VectorFieldConfig:
 
 
 @dataclass
+class DDTConfig:
+    active: bool
+    encoder: int
+    decoder: int
+
+
+@dataclass
 class ModelConfig:
-    vector_field: VectorFieldConfig
     autoencoder: AutoEncoderConfig
+    vector_field: VectorFieldConfig
+    ddt: Optional[DDTConfig] = None
 
 
 @dataclass

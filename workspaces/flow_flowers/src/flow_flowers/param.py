@@ -63,6 +63,8 @@ class TrainParam(CommonParam, ConfigAdapter):
     batch_size: Annotated[Optional[int], Parameter(name=["--batch-size", "-b"], help="The batch size for training", group=train_group)] = None
     eval_every: Annotated[Optional[int], Parameter(name=["--eval-every"], help="Evaluate the model every N steps", group=train_group)] = None
     eval_split: Annotated[Optional[float], Parameter(name=["--eval-split"], help="Fraction of data to use for evaluation", group=train_group)] = None
+    cfg: Annotated[Optional[float], Parameter(name=["--cfg"], help="Classifier-Free Guidance drop probability for training", group=train_group)] = None
+    vae_batch_size: Annotated[Optional[int], Parameter(name=["--batch-size-vae"], help="The batch size for VAE during training", group=train_group)] = None
 
     n_class: Annotated[Optional[int], Parameter(name=["--num-classes"], help="Number of classes in the dataset", group=model_group)] = None
     h_dim: Annotated[Optional[int], Parameter(name=["--hidden-dim"], help="Dimension of the hidden layers in the model", group=model_group)] = None
@@ -71,6 +73,10 @@ class TrainParam(CommonParam, ConfigAdapter):
     in_dim: Annotated[Optional[int], Parameter(name=["--input-dim"], help="Input dimension of the model", group=model_group)] = None
     w_size: Annotated[Optional[int], Parameter(name=["--input-width"], help="Input width of the model", group=model_group)] = None
     h_size: Annotated[Optional[int], Parameter(name=["--input-height"], help="Input height of the model", group=model_group)] = None
+
+    ddt: Annotated[Optional[bool], Parameter(name=["--ddt"], help="Enable Decoupled-Diffusion Transformer for training", group=train_group)] = None
+    ddt_encoder: Annotated[Optional[int], Parameter(name=["--ddt-encoder"], help="Number of encoder layers for DDT", group=train_group)] = None
+    ddt_decoder: Annotated[Optional[int], Parameter(name=["--ddt-decoder"], help="Number of decoder layers for DDT", group=train_group)] = None
 
     run_id: Annotated[Optional[str], Parameter(name=["--run-id"], help="The ID of the MLflow run", group=log_group)] = None
     run_nest: Annotated[Optional[bool], Parameter(name=["--run-nest"], help="Whether to nest the run under a parent run", group=log_group)] = None
@@ -109,6 +115,16 @@ class TrainParam(CommonParam, ConfigAdapter):
             cli_cfg.train.eval.every = self.eval_every
         if self.eval_split is not None:
             cli_cfg.train.eval.split = self.eval_split
+        if self.cfg is not None:
+            cli_cfg.train.params.cfg = self.cfg
+        if self.vae_batch_size is not None:
+            cli_cfg.train.params.vae_batch_size = self.vae_batch_size
+        if self.ddt is not None:
+            cli_cfg.model.ddt.active = self.ddt
+        if self.ddt_encoder is not None:
+            cli_cfg.model.ddt.encoder.active = self.ddt_encoder
+        if self.ddt_decoder is not None:
+            cli_cfg.model.ddt.decoder.active = self.ddt_decoder
 
         if self.n_class is not None:
             cli_cfg.model.vector_field.n_class = self.n_class

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Tuple, cast, override
+from typing import Any, Callable, Optional, Tuple, cast
 
 import torch
 
@@ -61,6 +61,10 @@ class ProbPath(ABC):
     def cond_vect_field(self, *, x_1: Tensor, x_t: Tensor, t: Tensor) -> Tensor:
         raise NotImplementedError()
 
+    @abstractmethod
+    def target(self, *, x_1: Tensor, x_0: Tensor) -> Tensor:
+        raise NotImplementedError()
+
     def cond_prob_path(self, *, x_1: Tensor, t: Tensor) -> Tensor:
         assert self.p_init is not None, "p_init must be specified"
         x_0 = self.p_init.sample(x_1.size(0))
@@ -73,18 +77,14 @@ class ProbPath(ABC):
         x_t = self.cond_prob_path(x_1=x_1, t=t)
         return x_t
 
-    def target(self, *, x_1: Tensor, x_t: Tensor, t: Tensor) -> Tensor:
-        return self.cond_vect_field(x_1=x_1, x_t=x_t, t=t)
-
 
 @dataclass(kw_only=True)
 class OTProbPath(ProbPath):
+    def target(self, *, x_1: Tensor, x_0: Tensor) -> Tensor:
+        return x_1 - x_0
+
     def cond_vect_field(self, *, x_1: Tensor, x_t: Tensor, t: Tensor) -> Tensor:
         return (x_1 - x_t) * (1.0 - t) ** -1.0
 
     def prob_path_flow(self, *, x_0: Tensor, x_1: Tensor, t: Tensor) -> Tensor:
         return (1.0 - t) * x_0 + t * x_1
-
-    @override
-    def target(self, *, x_1: Tensor, x_t: Tensor, t: Tensor) -> Tensor:
-        return x_1 - x_t

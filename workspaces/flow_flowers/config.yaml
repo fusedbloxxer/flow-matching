@@ -1,7 +1,7 @@
 base:
   store: .store
   debug: false
-  seed: 42
+  seed: 12
 
 track:
   server:
@@ -19,9 +19,11 @@ track:
 
 train:
   params:
-    batch_size: 64
+    vae_batch_size: 16
+    batch_size: 256
     epochs: null
     steps: null
+    cfg: 0.1
     lr: 1e-4
   ckpt:
     resume: false
@@ -29,7 +31,7 @@ train:
     dir: ckpt
     every: 1
   eval:
-    split: 0.1
+    split: 0
     every: 1
 
 model:
@@ -38,19 +40,23 @@ model:
     std: 2.3715
     mu: 0.1874
   vector_field:
-    mlp_layers: 4
+    mlp_layers: 2
     n_class: 102
     out_dim: 32
-    h_dim: 256
-    h_size: 16
-    w_size: 16
+    h_dim: 1024
+    h_size: 8
+    w_size: 8
     in_dim: 32
-    blocks: 20
+    blocks: 24
+  ddt:
+    active: true
+    encoder: 8
+    decoder: 4
 
 data:
   path: data
   preprocess:
     augment: true
-    crop: random
+    crop: center
     norm: true
-    size: 512
+    size: 256

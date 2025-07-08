@@ -3,10 +3,11 @@ import random
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Generator, Iterable
+from typing import Callable, Dict, Generator, Iterable
 
 import numpy.typing as npt
 import torch
+import torch.nn as nn
 
 from box import Box
 from einops import rearrange
@@ -93,6 +94,39 @@ def norm2img(image: Tensor) -> Tensor:
     image = image * 0.5 + 0.5
     image = torch.clamp(image, 0.0, 1.0)
     return image
+
+
+def batch_split(x: Tensor, bs: int) -> Generator[Tensor]:
+    for i in range(0, x.size(0), bs):
+        yield x[i : i + bs]
+
+
+def batch_op(x: Tensor, bs: int, op: Callable[[Tensor], Tensor]) -> Tensor:
+    x_c = []
+    for x_b in batch_split(x=x, bs=bs):
+        x_b = op(x_b)
+        x_c.append(x_b)
+    return torch.cat(x_c, dim=0)
+
+
+def params(model: nn.Module, verbose: bool = True) -> float:
+    """
+    Counts the total number of parameters in a PyTorch model and returns it in millions (M).
+
+    Args:
+        model (nn.Module): The PyTorch model.
+        verbose (bool): Whether to print the result. Defaults to True.
+
+    Returns:
+        float: Total number of parameters in millions.
+    """
+    total_params = sum(p.numel() for p in model.parameters())
+    total_params_in_m = total_params / 1e6
+
+    if verbose:
+        print(f"Total parameters: {total_params_in_m:.3f}M")
+
+    return total_params_in_m
 
 
 __all__ = ["find_and_chdir", "set_manual_seed", "to_numpy", "norm2img"]
