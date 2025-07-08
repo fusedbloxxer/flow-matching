@@ -30,6 +30,7 @@ class ODE:
             return self.u_theta(x_t=x_t, t=t, y=y)
 
         def ode_cfg(t: Tensor, x_t: Tensor) -> Tensor:
+            assert w
             t = rearrange(t, " -> 1 1 1 1")
             x_t_cu = repeat(x_t, "b c h w -> (2 b) c h w")
 
@@ -39,7 +40,7 @@ class ODE:
 
             v_pred_cu = self.u_theta(x_t=x_t_cu, t=t, y=y_cu)
             v_pred_c, v_pred_u = einx.rearrange("(b + b) ... -> b ..., b ...", v_pred_cu)
-            v_pred = v_pred_u + w * (v_pred_c - v_pred_u)
+            v_pred = (1.0 - w) * v_pred_u + w * v_pred_c
 
             return v_pred
 

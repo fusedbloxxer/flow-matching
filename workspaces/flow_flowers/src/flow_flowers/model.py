@@ -189,7 +189,7 @@ class DiCoBlock(nn.Module):
         self.norm_msa = nn.LayerNorm([h_dim, h_size, w_size])
         self.conv_mod = ConvModule(channels=h_dim)
         self.norm_mlp = nn.LayerNorm([h_dim, h_size, w_size])
-        self.feed_fwd = ConvMLP(h_dim=h_dim, layers=mlp_layers, kernel=1)
+        self.feed_fwd = ConvMLP(h_dim=h_dim, layers=mlp_layers, kernel=3)
 
     def forward(self, x: Tensor, c: Tensor) -> Tensor:
         adaLN = self.adaLN.forward(c)
@@ -217,7 +217,6 @@ class DiCo(nn.Module):
         super().__init__()
 
         self.in_proj = nn.Conv2d(in_dim, h_dim, kernel_size=3, padding=1)
-
         self.y_embedder = LabelEmbedder(n_class=n_class, emb_dim=h_dim)
         self.t_embedder = TimestepEmbedder(t_dim=1, emb_dim=h_dim)
 
@@ -253,15 +252,12 @@ class DiCo(nn.Module):
                 nn.init.zeros_(module.bias)
             nn.init.zeros_(module.weight)
 
-        # Initialize Layers
         self.apply(_basic_init)
 
-        # Zero-init AdaLN
         for module in self.modules():
             if isinstance(module, AdaLN):
                 module.apply(_zero_init)
 
-        # Zero-init Final Layer
         self.out_proj.apply(_zero_init)
 
     def forward(self, x_t: Tensor, **cond: Unpack[CondInput]) -> Tensor:
@@ -278,4 +274,77 @@ class DiCo(nn.Module):
         return h_t
 
 
-__all__ = ["AutoEncoder", "DiCo"]
+class DiCoDDT(nn.Module):
+    def __init__(self, *, in_dim: int, h_dim: int, out_dim: int, h_size: int, w_size: int, mlp_layers: int, n_class: int, decoder: int, encoder: int, **kwargs) -> None:
+        super().__init__()
+
+        self.in_proj = nn.Conv2d(in_dim, h_dim, kernel_size=3, padding=1)
+        self.y_embedder = LabelEmbedder(n_class=n_class, emb_dim=h_dim)
+        self.t_embedder = TimestepEmbedder(t_dim=1, emb_dim=h_dim)
+
+        self.encoder_layers = nn.ModuleList()
+        for _ in range(encoder):
+            self.encoder_layers.extend(
+                [
+                    DiCoBlock(h_dim=h_dim, h_size=h_size, w_size=w_size, mlp_layers=mlp_layers),
+                ]
+            )
+
+        self.decoder_layers = nn.ModuleList()
+        for _ in range(decoder):
+            self.decoder_layers.extend(
+                [
+                    DiCoBlock(h_dim=h_dim, h_size=h_size, w_size=w_size, mlp_layers=mlp_layers),
+                ]
+            )
+
+        self.out_proj = nn.Sequential(
+            *[
+                nn.LayerNorm([h_dim, h_size, w_size]),
+                nn.Conv2d(h_dim, out_dim, kernel_size=3, padding=1),
+            ]
+        )
+
+        self.initialize_weights()
+
+    def initialize_weights(self) -> None:
+        def _basic_init(module: nn.Module) -> None:
+            if not isinstance(module, nn.Conv2d):
+                return
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+            nn.init.xavier_uniform_(module.weight)
+
+        def _zero_init(module: nn.Module) -> None:
+            if not isinstance(module, nn.Conv2d):
+                return
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+            nn.init.zeros_(module.weight)
+
+        self.apply(_basic_init)
+
+        for module in self.modules():
+            if isinstance(module, AdaLN):
+                module.apply(_zero_init)
+
+        self.out_proj.apply(_zero_init)
+
+    def forward(self, x_t: Tensor, **cond: Unpack[CondInput]) -> Tensor:
+        h_t = self.in_proj(x_t)
+        t_embd = self.t_embedder(cond["t"])
+        y_embd = self.y_embedder(cond["y"])
+
+        z_t: Tensor = h_t
+        for layer in self.encoder_layers:
+            z_t = layer(x=z_t, c=t_embd + y_embd)
+
+        v_t = h_t
+        for layer in self.decoder_layers:
+            v_t = layer(x=v_t, c=t_embd + z_t)
+
+        v_t = self.out_proj(v_t)
+        return v_t
+
+
+__all__ = ["AutoEncoder", "DiCo", "DiCoDDT"]

@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 from .config import Config
 from .data import FlowersDataset, get_transform
-from .model import AutoEncoder, DiCo
+from .model import AutoEncoder, DiCo, DiCoDDT
 from .prob import OTProbPath, ProbPath
 from .utils import batch_op, iter_loop, set_manual_seed
 
@@ -31,8 +31,8 @@ class DeviceMap(TypedDict):
 @dataclass(kw_only=True)
 class Trainer:
     cfg: float
-    u_theta: DiCo
     vae: AutoEncoder
+    u_theta: DiCo | DiCoDDT
     dataset: Dataset
     ckpt_dir: Path
     track_uri: str
@@ -216,7 +216,11 @@ def train(cfg: Config):
 
     # Initialize models
     vae = AutoEncoder(**asdict(cfg.model.autoencoder))
-    u_theta = DiCo(**asdict(cfg.model.vector_field))
+
+    if cfg.model.ddt:
+        u_theta = DiCoDDT(**asdict(cfg.model.vector_field), **asdict(cfg.model.ddt))
+    else:
+        u_theta = DiCo(**asdict(cfg.model.vector_field))
 
     # Gather run parameters
     run_params = Box()
@@ -225,7 +229,6 @@ def train(cfg: Config):
     run_params.batch_size = cfg.train.params.batch_size
     run_params.num_classes = cfg.model.vector_field.n_class
     run_params.mlp_layers = cfg.model.vector_field.mlp_layers
-    run_params.dico_layers = cfg.model.vector_field.blocks
     run_params.hidden_size = cfg.model.vector_field.h_dim
     run_params.latent_dim = cfg.model.vector_field.in_dim
     run_params.latent_w = cfg.model.vector_field.w_size
@@ -242,6 +245,8 @@ def train(cfg: Config):
         run_params.ddt = cfg.model.ddt.active
         run_params.ddt_encoder_layers = cfg.model.ddt.encoder
         run_params.ddt_decoder_layers = cfg.model.ddt.decoder
+    if not cfg.model.ddt:
+        run_params.dico_layers = cfg.model.vector_field.blocks
 
     # Initialize Trainer
     trainer = Trainer(
