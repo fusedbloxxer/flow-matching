@@ -39,6 +39,7 @@ class Trainer:
     prob_path: ProbPath
     experiment_name: str
     run_params: Dict[str, Any]
+    cfm_w: Optional[float] = field(default=None)
     devices: InitVar[DeviceMap] = field(default=cast(Any, {}))
 
     def __post_init__(self, devices: DeviceMap) -> None:
@@ -242,11 +243,15 @@ def train(cfg: Config):
     run_params.norm = cfg.data.preprocess.norm
 
     if cfg.model.ddt:
-        run_params.ddt = cfg.model.ddt.active
+        run_params.ddt = True
         run_params.ddt_encoder_layers = cfg.model.ddt.encoder
         run_params.ddt_decoder_layers = cfg.model.ddt.decoder
-    if not cfg.model.ddt:
+    else:
         run_params.dico_layers = cfg.model.vector_field.blocks
+
+    if cfg.model.cfm:
+        run_params.contrastive_flow_matching = True
+        run_params.contrastive_weight = cfg.model.cfm.w
 
     # Initialize Trainer
     trainer = Trainer(
@@ -260,6 +265,7 @@ def train(cfg: Config):
         run_params=run_params.to_dict(),
         experiment_name=cfg.track.run.experiment,
         devices={"u_theta": "cuda:0", "vae": "cuda:0"},
+        cfm_w=cfg.model.cfm.w if cfg.model.cfm else None,
     )
 
     # Launch job

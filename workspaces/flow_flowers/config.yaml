@@ -49,9 +49,10 @@ model:
     in_dim: 32
     blocks: 24
   ddt:
-    active: true
     encoder: 8
     decoder: 4
+  cfm:
+    w: 0.05
 
 data:
   path: data

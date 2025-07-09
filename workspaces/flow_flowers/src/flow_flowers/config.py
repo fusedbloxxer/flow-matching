@@ -102,9 +102,13 @@ class VectorFieldConfig:
 
 @dataclass
 class DDTConfig:
-    active: bool
     encoder: int
     decoder: int
+
+
+@dataclass
+class ContrastiveLossConfig:
+    w: float
 
 
 @dataclass
@@ -112,6 +116,7 @@ class ModelConfig:
     autoencoder: AutoEncoderConfig
     vector_field: VectorFieldConfig
     ddt: Optional[DDTConfig] = None
+    cfm: Optional[ContrastiveLossConfig] = None
 
 
 @dataclass

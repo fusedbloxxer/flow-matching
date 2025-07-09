@@ -78,6 +78,9 @@ class TrainParam(CommonParam, ConfigAdapter):
     ddt_encoder: Annotated[Optional[int], Parameter(name=["--ddt-encoder"], help="Number of encoder layers for DDT", group=train_group)] = None
     ddt_decoder: Annotated[Optional[int], Parameter(name=["--ddt-decoder"], help="Number of decoder layers for DDT", group=train_group)] = None
 
+    cfm: Annotated[Optional[bool], Parameter(name=["--contrastive-loss"], help="Enable delta flow matching using contrastive loss", group=train_group)] = None
+    cfm_weight: Annotated[Optional[float], Parameter(name=["--contrastive-weight"], help="Weight for contrastive loss", group=train_group)] = None
+
     run_id: Annotated[Optional[str], Parameter(name=["--run-id"], help="The ID of the MLflow run", group=log_group)] = None
     run_nest: Annotated[Optional[bool], Parameter(name=["--run-nest"], help="Whether to nest the run under a parent run", group=log_group)] = None
     run_name: Annotated[Optional[str], Parameter(name=["--run-name"], help="The name of the MLflow run", group=log_group)] = None
@@ -119,12 +122,17 @@ class TrainParam(CommonParam, ConfigAdapter):
             cli_cfg.train.params.cfg = self.cfg
         if self.vae_batch_size is not None:
             cli_cfg.train.params.vae_batch_size = self.vae_batch_size
-        if self.ddt is not None:
-            cli_cfg.model.ddt.active = self.ddt
+
         if self.ddt_encoder is not None:
+            assert self.ddt, "DDT must be active to specify number of encoder layers"
             cli_cfg.model.ddt.encoder.active = self.ddt_encoder
         if self.ddt_decoder is not None:
+            assert self.ddt, "DDT must be active to specify number of decoder layers"
             cli_cfg.model.ddt.decoder.active = self.ddt_decoder
+
+        if self.cfm_weight is not None:
+            assert self.cfm, "Contrastive flow matching must be enabled"
+            cli_cfg.model.cfm.w = self.cfm_weight
 
         if self.n_class is not None:
             cli_cfg.model.vector_field.n_class = self.n_class
