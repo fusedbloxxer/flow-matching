@@ -12,6 +12,7 @@ import torch.nn as nn
 from box import Box
 from einops import rearrange
 from torch import Tensor
+from torch.distributions import Multinomial
 
 
 @dataclass
@@ -56,6 +57,22 @@ class MeanVariance:
             box.mean = self.mean_
             box.var = self.var_
         return box.to_dict()
+
+
+@dataclass
+class NoSelfSampler:
+    N: int
+    device: str = "cpu"
+    dtype: torch.dtype = torch.int32
+
+    def __post_init__(self) -> None:
+        self.distrib_ = Multinomial(probs=torch.ones((self.N, self.N)) - torch.eye(self.N))
+
+    def sample(self) -> Tensor:
+        samples = self.distrib_.sample()
+        indices = samples.argmax(dim=1)
+        indices = indices.to(self.device, self.dtype)
+        return indices
 
 
 def find_and_chdir(filename: str) -> None:

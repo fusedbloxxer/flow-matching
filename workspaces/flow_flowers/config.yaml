@@ -1,7 +1,7 @@
 base:
   store: .store
   debug: false
-  seed: 12
+  seed: 42
 
 track:
   server:
@@ -20,7 +20,7 @@ track:
 train:
   params:
     vae_batch_size: 16
-    batch_size: 16
+    batch_size: 256
     epochs: null
     steps: null
     cfg: 0.1
@@ -31,7 +31,7 @@ train:
     dir: ckpt
     every: 1
   eval:
-    split: 0.80
+    split: 0
     every: 1
 
 model:

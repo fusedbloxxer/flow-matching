@@ -20,7 +20,7 @@ from .config import Config
 from .data import FlowersDataset, get_transform
 from .model import AutoEncoder, DiCo, DiCoDDT
 from .prob import OTProbPath, ProbPath
-from .utils import batch_op, iter_loop, set_manual_seed
+from .utils import NoSelfSampler, batch_op, iter_loop, set_manual_seed
 
 
 class DeviceMap(TypedDict):
@@ -83,6 +83,8 @@ class Trainer:
             raise ValueError("Run nesting should be specified only if resuming from a checkpoint")
         if run_nest and run_id is None:
             raise ValueError("Run ID should be specified when nesting a run")
+        if self.cfm_w is not None:
+            self.cfm_sampler = NoSelfSampler(N=bs, device=self.device_map["u_theta"])
 
         if seed:
             set_manual_seed(seed)
@@ -167,10 +169,19 @@ class Trainer:
         # Sample x_t ~ p_t(*|x_1)
         x_t_latent = self.prob_path.prob_path_flow(x_0=x_0, x_1=x_1_latent, t=t)
 
-        # Learn CFM objective
-        v_true = self.prob_path.target(x_1=x_1_latent, x_0=x_0)
+        # Compute FM Loss
         v_pred = self.u_theta(x_t=x_t_latent, t=t, y=y)
-        loss = F.mse_loss(v_pred, v_true)
+        v_fm = self.prob_path.target(x_1=x_1_latent, x_0=x_0)
+        loss = F.mse_loss(v_pred, v_fm)
+
+        # Compute CFM loss
+        if self.cfm_w is not None:
+            i_cfm = self.cfm_sampler.sample()
+            x_1_latent_cfm = x_1_latent[i_cfm]
+            x_0_cfm = x_0[i_cfm]
+            v_cfm = self.prob_path.target(x_1=x_1_latent_cfm, x_0=x_0_cfm)
+            loss_cfm = -self.cfm_w * F.mse_loss(v_pred, v_cfm)
+            loss = loss + loss_cfm
 
         # Backprop
         self._optimizer.zero_grad()
@@ -252,6 +263,7 @@ def train(cfg: Config):
     if cfg.model.cfm:
         run_params.contrastive_flow_matching = True
         run_params.contrastive_weight = cfg.model.cfm.w
+        assert cfg.train.params.batch_size > 1, "Batch size must be greater than 1 for contrastive flow matching"
 
     # Initialize Trainer
     trainer = Trainer(
