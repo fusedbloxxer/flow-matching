@@ -1,4 +1,4 @@
-# Flow-Flowers: Class-to-Image with Flow Matching on Oxford-102 🌸
+# Flow-Flowers: Class-to-Image Flow Matching on Oxford-102 🌸
 
 ## Project Scope
 
