@@ -17,7 +17,7 @@ Key features include:
 ## 📦 Installation
 
 ```bash
-uv sync --pacakge flow_flowers
+uv sync --all-packages
 ```
 
 **Key Dependencies:**
