@@ -1,7 +1,7 @@
 base:
   store: .store
   debug: false
-  seed: 42
+  seed: 76
 
 track:
   server:
@@ -43,21 +43,21 @@ model:
     mlp_layers: 2
     n_class: 102
     out_dim: 32
-    h_dim: 1024
+    h_dim: 512
     h_size: 8
     w_size: 8
     in_dim: 32
-    blocks: 24
+    blocks: 32
   ddt:
-    encoder: 8
-    decoder: 4
+    encoder: 12
+    decoder: 6
   cfm:
     w: 0.05
 
 data:
   path: data
   preprocess:
-    augment: false
-    crop: center
+    augment: true
+    crop: random
     norm: true
     size: 256
