@@ -122,7 +122,6 @@ uv run python -m flow_flowers --config config.yaml
 
 - Stable training at batch size=256, lr=1e-4
 - Class imbalance impacts minority class generation quality
-- Contrastive Flow Matching reduces FID by ~8.9 vs standard flow matching
 
 ## 📚 References
 
