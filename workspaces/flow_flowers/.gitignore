@@ -1,3 +1,4 @@
 .store/
 ckpt/
 data/
+*.pth
