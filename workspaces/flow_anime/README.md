@@ -160,13 +160,13 @@
 
 ---
 
-### Task 8: Model Quantization using torchao
+### Task 9: Model Quantization using torchao
 
 1. Perform quantization
 
 ---
 
-### Task 9: Node-Based Workflow App
+### Task 10: Node-Based Workflow App
 
 1. **Backend**: FastAPI
 2. **Frontend**: Astro
