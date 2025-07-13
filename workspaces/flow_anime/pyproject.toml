@@ -1,5 +1,5 @@
 [project]
-name = "flow_flowers"
+name = "flow_anime"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -11,17 +11,13 @@ dependencies = [
     "einops>=0.8.1",
     "einx[torch]>=0.3.0",
     "matplotlib>=3.10.3",
-    "mlflow>=3.1",
-    "omegaconf>=2.3.0",
-    "python-box>=7.3.2",
     "torch>=2.7.1",
+    "torchao>=0.11.0",
     "torchdiffeq>=0.2.5",
     "torchvision>=0.22.1",
     "tqdm>=4.67.1",
+    "wandb>=0.21.0",
 ]
-
-[dependency-groups]
-dev = ["pyqt6>=6.9.1", "ruff>=0.12.0"]
 
 [build-system]
 requires = ["hatchling"]
