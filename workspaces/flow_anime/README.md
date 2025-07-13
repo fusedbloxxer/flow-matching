@@ -1,4 +1,4 @@
-# Project - Transition Matching on Anime
+# Transition Matching on Anime
 
 [Transition Matching Paper](https://arxiv.org/abs/2506.23589v1)
 
@@ -148,8 +148,13 @@
 
 ### Task 7: LoRA Fine-Tuning
 
-1. Subject-specific fine-tuning.
-2. Style-specific fine-tuning.
+1. Implement LoRA variants
+
+   1. [LoRA](https://arxiv.org/abs/2106.09685)
+   2. [T-LoRA](https://arxiv.org/abs/2507.05964)
+
+2. Subject-specific fine-tuning.
+3. Style-specific fine-tuning.
 
 ---
 
