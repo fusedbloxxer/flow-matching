@@ -1,7 +1,8 @@
 import abc
 
-from torch import Tensor
 from dataclasses import dataclass
+
+from torch import Tensor
 
 from .field import VectorField
 from .path import GaussProbPath

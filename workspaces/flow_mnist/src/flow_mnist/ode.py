@@ -1,10 +1,11 @@
+from dataclasses import dataclass
+from typing import cast
+
 import einx
 import torch
 
-from typing import cast
 from torch import Tensor
 from torchdiffeq import odeint
-from dataclasses import dataclass
 
 from .model import FlowModel
 
@@ -45,7 +46,7 @@ class ODE:
             y_cu = cast(Tensor, einx.rearrange("b ..., b ... -> (b + b) ...", y_c, y_u))
 
             v_pred = self.model.forward(x=x_t, t=t, y=y_cu)
-            v_c, v_u = einx.rearrange('(b + b) ... -> b ..., b ...', v_pred)
+            v_c, v_u = einx.rearrange("(b + b) ... -> b ..., b ...", v_pred)
             v_pred = v_u + w * (v_c - v_u)
 
             return v_pred

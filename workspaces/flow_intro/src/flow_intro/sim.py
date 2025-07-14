@@ -1,12 +1,13 @@
 import abc
-import torch
 
-from torch import Tensor
-from einops import rearrange
 from dataclasses import dataclass
 
-from .ode import ODE
-from .ode import SDE
+import torch
+
+from einops import rearrange
+from torch import Tensor
+
+from .ode import ODE, SDE
 
 
 class Simulator(abc.ABC):

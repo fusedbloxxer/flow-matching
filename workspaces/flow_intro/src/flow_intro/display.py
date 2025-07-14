@@ -1,18 +1,18 @@
 import matplotlib.pyplot as plt
 
-from torch import Tensor
 from einops import reduce
 from matplotlib.axes import Axes
+from torch import Tensor
 
 
 def plot_prob_path(x_t: Tensor, t: Tensor) -> None:
     # t   - T
     # x_t - T x N x D
-    n_steps  = x_t.size(0)
+    n_steps = x_t.size(0)
     _, axes = plt.subplots(nrows=1, ncols=n_steps, figsize=(20, 8))
 
-    x_min, y_min = reduce(x_t, 't n d -> d', 'min')
-    x_max, y_max = reduce(x_t, 't n d -> d', 'max')
+    x_min, y_min = reduce(x_t, "t n d -> d", "min")
+    x_max, y_max = reduce(x_t, "t n d -> d", "max")
 
     for t_step, axis in enumerate(axes):
         axis: Axes
@@ -34,7 +34,7 @@ def plot_trajectory(x_t: Tensor) -> None:
     for i in range(num_instances):
         x = x_t[:, i, 0]
         y = x_t[:, i, 1]
-        plt.plot(x, y, color='blue', linewidth=0.5) # Use a single color for all trajectories
+        plt.plot(x, y, color="blue", linewidth=0.5)  # Use a single color for all trajectories
 
     plt.title("Trajectories of Points Over Time")
     plt.xlabel("X Coordinate")

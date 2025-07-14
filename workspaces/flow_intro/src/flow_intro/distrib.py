@@ -1,11 +1,13 @@
 import abc
+
+from typing import Tuple
+
 import torch
 import torch.distributions as D
 
+from einops import rearrange, repeat
 from torch import Tensor
 from torch.nn import Module
-from typing import Tuple
-from einops import rearrange, repeat
 
 
 class Sampleable(abc.ABC):
@@ -52,9 +54,7 @@ class Circles(Module, Sampleable):
         # Obtain rotation matrix from offset_degrees
         rot_degree = torch.tensor(offset_degree)
         rot = torch.deg2rad(rot_degree)
-        rot_mat = torch.tensor(
-            [[torch.cos(rot), -torch.sin(rot)], [torch.sin(rot), torch.cos(rot)]]
-        )
+        rot_mat = torch.tensor([[torch.cos(rot), -torch.sin(rot)], [torch.sin(rot), torch.cos(rot)]])
 
         # Rotate the points on circle
         means = rot_mat @ means
@@ -101,9 +101,7 @@ class Checkers(Module, Sampleable):
 
         # Total number of patches per row
         self.patch_dist = D.Categorical(torch.ones(self.t_patches_))
-        self.point_dist = D.Uniform(
-            low=torch.zeros(2), high=torch.full((2,), patch_size)
-        )
+        self.point_dist = D.Uniform(low=torch.zeros(2), high=torch.full((2,), patch_size))
         self.register_buffer("_dummy", torch.empty((0,)))
 
     def sample(self, n_samples: torch.Size | Tuple | int):
@@ -115,9 +113,7 @@ class Checkers(Module, Sampleable):
 
         # Determine offsets
         y_offset = cls // self.n_patches_
-        x_offset = (cls % self.n_patches_) * 2 + (
-            (y_offset + self.fill_toggle_) % 2 != 0
-        ).float()
+        x_offset = (cls % self.n_patches_) * 2 + ((y_offset + self.fill_toggle_) % 2 != 0).float()
 
         # Translate all points according to class
         pts[:, 0] = pts[:, 0] + x_offset * self.p_size_

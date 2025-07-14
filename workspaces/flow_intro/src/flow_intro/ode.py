@@ -1,10 +1,11 @@
+from dataclasses import dataclass
+
 import torch
 
 from torch import Tensor
-from dataclasses import dataclass
 
-from .field import VectorField
 from .diffusion import DiffusionModel
+from .field import VectorField
 
 
 @dataclass(kw_only=True)

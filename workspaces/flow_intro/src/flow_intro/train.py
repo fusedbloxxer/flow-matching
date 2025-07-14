@@ -1,11 +1,12 @@
+from dataclasses import dataclass
+
 import torch
 import torch.nn.functional as F
 
-from tqdm import tqdm
 from torch import Tensor
 from torch.nn import Module
 from torch.optim import AdamW
-from dataclasses import dataclass
+from tqdm import tqdm
 
 from .path import ProbPath
 

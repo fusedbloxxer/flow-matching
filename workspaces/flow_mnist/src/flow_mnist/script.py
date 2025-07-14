@@ -1,7 +1,8 @@
 import os
-import mlflow.cli
 
 from pathlib import Path
+
+import mlflow.cli
 
 from .config import load_config
 

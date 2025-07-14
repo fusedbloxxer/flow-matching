@@ -1,11 +1,12 @@
+from typing import TypedDict, Unpack, cast
+
 import torch
 import torch.nn as nn
 
-from torch import Tensor, FloatTensor
-from typing import Unpack, TypedDict, cast
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.autoencoders.vae import DecoderOutput
 from diffusers.models.modeling_outputs import AutoencoderKLOutput
-from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
+from torch import FloatTensor, Tensor
 
 from .utils import image2norm, norm2image
 

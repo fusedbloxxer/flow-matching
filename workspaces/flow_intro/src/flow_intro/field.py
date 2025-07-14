@@ -1,10 +1,11 @@
 import abc
 
-from torch import Tensor
 from dataclasses import dataclass
 
-from .net import MLP
+from torch import Tensor
+
 from .flow import LinearSchedule
+from .net import MLP
 
 
 class VectorField(abc.ABC):

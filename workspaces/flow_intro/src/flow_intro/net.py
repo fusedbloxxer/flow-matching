@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from torch import Tensor
 from einops import rearrange, repeat
+from torch import Tensor
 
 
 class MLP(nn.Module):
@@ -32,9 +32,9 @@ class MLP(nn.Module):
 
     def forward(self, x_t: Tensor, t: Tensor) -> Tensor:
         if t.ndim == 1:
-            t = rearrange(t, 'b -> b 1')
+            t = rearrange(t, "b -> b 1")
         if t.ndim == 0:
-            t = repeat(t, '  -> b 1', b=x_t.size(0))
+            t = repeat(t, "  -> b 1", b=x_t.size(0))
         x = torch.cat([x_t, t], dim=-1)
         x = self.proj_in(x)
 

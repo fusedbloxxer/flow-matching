@@ -1,6 +1,7 @@
-from typing import cast
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
+from typing import cast
+
 from omegaconf import OmegaConf, SCMode
 
 

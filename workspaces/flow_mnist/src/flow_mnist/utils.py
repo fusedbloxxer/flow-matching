@@ -1,6 +1,7 @@
+from typing import Tuple
+
 import matplotlib.pyplot as plt
 
-from typing import Tuple
 from einops import rearrange
 from torch import Tensor
 from torchvision.utils import make_grid

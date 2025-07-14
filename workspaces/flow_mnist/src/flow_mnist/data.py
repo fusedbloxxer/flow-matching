@@ -1,10 +1,11 @@
+from pathlib import Path
+from typing import Tuple
+
 import torch
 import torchvision.transforms.v2 as T
 
-from pathlib import Path
-from typing import Tuple
-from torch import Tensor
 from einops import repeat
+from torch import Tensor
 from torch.utils.data import Dataset
 from torchvision.datasets import MNIST
 

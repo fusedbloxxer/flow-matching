@@ -1,20 +1,21 @@
-import torch
-import mlflow
-
-from tqdm import trange
-from typing import Tuple
 from dataclasses import dataclass
+from typing import Tuple
+
+import mlflow
+import torch
+
 from einops import reduce, repeat
 from torch import Tensor
-from torch.optim import AdamW
 from torch.nn.functional import mse_loss
+from torch.optim import AdamW
 from torchvision.utils import make_grid
+from tqdm import trange
 
-from .ode import ODE
-from .utils import plot_batch
 from .config import LogParamConfig
 from .flow import FlowPath, Sampleable
-from .model import FlowModel, AutoEncoder
+from .model import AutoEncoder, FlowModel
+from .ode import ODE
+from .utils import plot_batch
 
 
 @dataclass(kw_only=True)

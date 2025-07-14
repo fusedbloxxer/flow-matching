@@ -1,12 +1,14 @@
 import abc
+
+from dataclasses import dataclass
+
 import torch
 
 from torch import Tensor
-from dataclasses import dataclass
 
 from .distrib import Sampleable
-from .flow import LinearSchedule, RootSchedule
 from .field import CondGaussVectorField, CondOTVectorField
+from .flow import LinearSchedule, RootSchedule
 
 
 class ProbPath(abc.ABC):
