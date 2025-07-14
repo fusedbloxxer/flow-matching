@@ -1,6 +1,6 @@
 from .app import app
 
 
-@app.command(name="workflow")
+@app.command
 def workflow() -> None:
     pass

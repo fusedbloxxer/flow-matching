@@ -1,6 +1,6 @@
 from .app import app
 
 
-@app.command(name="train")
+@app.command
 def train() -> None:
     pass

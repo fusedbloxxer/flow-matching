@@ -1,6 +1,6 @@
 from .app import app
 
 
-@app.command(name="sample")
+@app.command
 def sample() -> None:
     pass
