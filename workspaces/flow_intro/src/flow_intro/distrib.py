@@ -12,7 +12,7 @@ from torch.nn import Module
 
 class Sampleable(abc.ABC):
     @abc.abstractmethod
-    def sample(self, samples: torch.Size | Tuple) -> Tensor:
+    def sample(self, n_samples: torch.Size | Tuple | int) -> Tensor:
         raise NotImplementedError()
 
 
@@ -25,7 +25,7 @@ class Circles(Module, Sampleable):
         n_modes: int,
         mean: Tensor | None = None,
         scale: Tensor | None = None,
-        radius: float | None = None,
+        radius: float = 1.0,
         offset_degree: float = 0.0,
         **kwargs,
     ) -> None:

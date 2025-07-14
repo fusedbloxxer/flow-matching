@@ -92,12 +92,12 @@ class Trainer:
             steps = epochs * (self.dataset_size // bs)
         if not steps:
             raise ValueError("Number of steps could not be computed")
+        start_step = 0
+
         if ckpt_resume:
-            assert run_id
+            assert run_id, "run_id must be specified when resuming checkpoint"
             start_step = int(ckpt_name.split("_")[-1])
             self.load_ckpt(name=ckpt_name)
-        if not ckpt_resume:
-            start_step = 0
 
         # Save params for training loop
         self._bs_vae = bs_vae
