@@ -12,7 +12,7 @@
 
 ## Prerequisites
 
-- **Task 1**: Read the TM Paper
+- **Task 1**: Read the TM Paper - DONE
 - **Task 2:** Review this [repo](https://github.com/gstoica27/DeltaFM) for best practices
 
   - How they perform the pre-processing
