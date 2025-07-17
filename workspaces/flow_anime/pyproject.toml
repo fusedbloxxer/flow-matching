@@ -7,16 +7,18 @@ requires-python = ">=3.13"
 dependencies = [
     "albumentationsx>=2.0.9",
     "beartype>=0.21.0",
-    "cyclopts>=3.19.0",
     "diffusers>=0.33.1",
     "einops>=0.8.1",
     "einx[torch]>=0.3.0",
     "matplotlib>=3.10.3",
+    "msgspec>=0.19.0",
+    "pyyaml>=6.0.2",
     "torch>=2.7.1",
     "torchao>=0.11.0",
     "torchdiffeq>=0.2.5",
     "torchvision>=0.22.1",
     "tqdm>=4.67.1",
+    "tyro>=0.9.26",
     "wandb>=0.21.0",
 ]
 

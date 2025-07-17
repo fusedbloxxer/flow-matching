@@ -1,6 +1,5 @@
-from .app import app
+from .args import TrainArgs
 
 
-@app.command
-def train() -> None:
+def train(args: TrainArgs) -> None:
     pass
