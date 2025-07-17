@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Annotated, Literal
 
 from msgspec import Struct
@@ -9,10 +8,10 @@ class WandbArgs(Struct):
     """Arguments for tracking experiments"""
 
     # The name of the experiment
-    exp_name: str
+    exp_name: str = ""
 
     # The name of the run
-    run_name: str
+    run_name: str = ""
 
     # Log interval in steps
     interval: int = 1
@@ -25,7 +24,7 @@ class DatasetArgs(Struct):
     """Arguments for dataset"""
 
     # The path to the dataset directory
-    path: Path
+    path: str = "data"
 
 
 class DanbooruDatasetArgs(DatasetArgs):
@@ -53,7 +52,7 @@ class T5GemmaTextEncoderArgs(Struct, tag="t5gemma"):
     """Arguments for T5 Gemma Text Encoder"""
 
     # The latent size of the text encoder
-    latent_size: int
+    latent_size: int = 224
 
 
 _T5GemmaTextEncoderArgs = Annotated[T5GemmaTextEncoderArgs, subcommand(name="t5gemma")]
@@ -63,7 +62,7 @@ class CLIPTextEncoderArgs(Struct, tag="clip"):
     """Arguments for CLIP Text Encoder"""
 
     # The latent size of the text encoder
-    latent_size: int
+    latent_size: int = 224
 
 
 _CLIPTextEncoderArgs = Annotated[CLIPTextEncoderArgs, subcommand(name="clip")]
@@ -95,7 +94,7 @@ class TrainParamsArgs(Struct):
     epochs: int | None = None
 
     # The number of steps
-    steps: int | None = None
+    steps: int | None = 1
 
     # Evaluate split ratio
     eval_split: float | None = 0.1
@@ -107,7 +106,7 @@ class TrainParamsArgs(Struct):
     ckpt_name: str | None = None
 
     # Checkpoint directory
-    ckpt_dir: Path | None = None
+    ckpt_dir: str | None = None
 
     # Checkpoint every n steps
     ckpt_every: int | None = 10
@@ -120,7 +119,7 @@ class TrainParamsArgs(Struct):
             raise ValueError("epochs or steps must be set")
         if self.epochs is not None and self.steps is not None:
             raise ValueError("epochs and steps cannot be both set")
-        if self.ckpt_resume and (self.ckpt_name is None or self.ckpt_dir is None or not self.ckpt_dir.exists()):
+        if self.ckpt_resume and (self.ckpt_name is None or self.ckpt_dir is None):
             raise ValueError("ckpt_name and ckpt_dir must be set if ckpt_resume is True")
 
 
@@ -139,14 +138,14 @@ class TrainArgs(Struct, kw_only=True):
     # The seed of the experiment
     seed: int = 42
 
-    # Dataset used for training
-    data: _DanbooruDatasetArgs
-
     # Training parameters
     train: _TrainParametersArgs
 
+    # Dataset used for training
+    data: _DanbooruDatasetArgs
+
     # Tracking provider for experiments
-    track: _WandbArgs | None = None
+    track: _WandbArgs
 
     # AutoEncoder used for encoding images into latents
     ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs
