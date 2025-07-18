@@ -114,14 +114,6 @@ class TrainParamsArgs(Struct):
     # Resume from checkpoint
     ckpt_resume: bool = False
 
-    def __post_init__(self):
-        if self.epochs is None and self.steps is None:
-            raise ValueError("epochs or steps must be set")
-        if self.epochs is not None and self.steps is not None:
-            raise ValueError("epochs and steps cannot be both set")
-        if self.ckpt_resume and (self.ckpt_name is None or self.ckpt_dir is None):
-            raise ValueError("ckpt_name and ckpt_dir must be set if ckpt_resume is True")
-
 
 _TrainParametersArgs = Annotated[TrainParamsArgs, arg(name="train")]
 
