@@ -7,10 +7,19 @@ from tyro.conf import arg, subcommand
 class TrackArgs(Struct):
     """Arguments for tracking experiments"""
 
-    # The name of the experiment
+    # Logs location
+    dir: str
+
+    # Name of the owner entity
+    entity_name: str
+
+    # Name of the project
+    project_name: str = "flow_anime"
+
+    # Name of the experiment
     exp_name: str = ""
 
-    # The name of the run
+    # Name of the run
     run_name: str = ""
 
     # Log interval in steps
@@ -121,13 +130,13 @@ _TrainParametersArgs = Annotated[TrainParamsArgs, arg(name="train")]
 class TrainArgs(Struct, kw_only=True):
     """Arguments for training"""
 
-    # The devices to be used
+    # Device that will be used to train upon
     device: Literal["cpu", "cuda:0", "cuda:1"] = "cuda:0"
 
     # Enable verbose logging
     verbose: bool = True
 
-    # The seed of the experiment
+    # Seed of the experiment
     seed: int = 42
 
     # Training parameters
@@ -152,11 +161,20 @@ TrainArgs = Annotated[TrainArgs, arg(name="")]  # type: ignore
 class WandbArgs(Struct, kw_only=True, tag="wandb"):
     """Arguments for wandb server"""
 
-    # The host to bind the server to
+    # Local path for the volume
+    path: str
+
+    # Port to bind the server to
     port: int = 8080
 
-    # The path to store data
-    path: str
+    # Official docker image name for wandb
+    image: str = "wandb/local"
+
+    # Volume name to identify the host storage
+    volume: str = "wandb-flow-anime"
+
+    # Container name to identify the wandb instance
+    container = "wandb-flow-anime"
 
 
 _WandbServerArgs = Annotated[WandbArgs, subcommand(name="wandb")]
