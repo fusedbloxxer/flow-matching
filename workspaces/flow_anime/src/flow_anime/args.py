@@ -4,7 +4,7 @@ from msgspec import Struct
 from tyro.conf import arg, subcommand
 
 
-class WandbArgs(Struct):
+class TrackArgs(Struct):
     """Arguments for tracking experiments"""
 
     # The name of the experiment
@@ -17,7 +17,7 @@ class WandbArgs(Struct):
     interval: int = 1
 
 
-_WandbArgs = Annotated[WandbArgs, subcommand(name="wandb")]
+_TrackArgs = Annotated[TrackArgs, subcommand(name="track")]
 
 
 class DatasetArgs(Struct):
@@ -137,7 +137,7 @@ class TrainArgs(Struct, kw_only=True):
     data: _DanbooruDatasetArgs
 
     # Tracking provider for experiments
-    track: _WandbArgs
+    track: _TrackArgs
 
     # AutoEncoder used for encoding images into latents
     ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs
@@ -149,4 +149,17 @@ class TrainArgs(Struct, kw_only=True):
 TrainArgs = Annotated[TrainArgs, arg(name="")]  # type: ignore
 
 
-__all__ = ["TrainArgs"]
+class ServerArgs(Struct, kw_only=True):
+    """Arguments for servers"""
+
+    # The host to bind the server to
+    port: int = 8080
+
+    # The path to store data
+    path: str
+
+
+ServerArgs = Annotated[ServerArgs, arg(name="")]  # type: ignore
+
+
+__all__ = ["TrainArgs", "ServerArgs"]

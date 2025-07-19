@@ -8,6 +8,7 @@ dependencies = [
     "albumentationsx>=2.0.9",
     "beartype>=0.21.0",
     "diffusers>=0.33.1",
+    "docker>=7.1.0",
     "einops>=0.8.1",
     "einx[torch]>=0.3.0",
     "matplotlib>=3.10.3",
