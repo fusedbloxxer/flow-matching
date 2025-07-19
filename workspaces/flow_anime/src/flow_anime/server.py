@@ -5,10 +5,16 @@ import sys
 import docker
 import docker.errors
 
-from .args import ServerArgs
+from .args import ServerArgs, WandbArgs
 
 
 def server(args: ServerArgs) -> None:
+    match args.server_args:
+        case WandbArgs() as wandb_args:
+            wandb(wandb_args)
+
+
+def wandb(args: WandbArgs) -> None:
     WANDB_DOCKER_IMAGE = "wandb/local"
     WANDB_VOLUME_NAME = "wandb-flow-anime"
     WANDB_CONTAINER_NAME = "wandb-flow-anime"
@@ -67,3 +73,6 @@ def server(args: ServerArgs) -> None:
         container.wait()
     finally:
         clean_on_exit()
+
+
+__all__ = ["server"]

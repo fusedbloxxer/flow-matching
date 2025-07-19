@@ -149,8 +149,8 @@ class TrainArgs(Struct, kw_only=True):
 TrainArgs = Annotated[TrainArgs, arg(name="")]  # type: ignore
 
 
-class ServerArgs(Struct, kw_only=True):
-    """Arguments for servers"""
+class WandbArgs(Struct, kw_only=True, tag="wandb"):
+    """Arguments for wandb server"""
 
     # The host to bind the server to
     port: int = 8080
@@ -159,7 +159,17 @@ class ServerArgs(Struct, kw_only=True):
     path: str
 
 
-ServerArgs = Annotated[ServerArgs, arg(name="")]  # type: ignore
+_WandbServerArgs = Annotated[WandbArgs, subcommand(name="wandb")]
+
+
+class ServerArgs(Struct, kw_only=True):
+    """Arguments for servers"""
+
+    # The type of server to run
+    server_args: Annotated[_WandbServerArgs, arg(name="")]
+
+
+ServerArgs = Annotated[ServerArgs, arg(name="", prefix_name=False)]  # type: ignore
 
 
 __all__ = ["TrainArgs", "ServerArgs"]

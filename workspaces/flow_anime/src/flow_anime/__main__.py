@@ -10,9 +10,9 @@ from .workflow import workflow
 tyro.extras.subcommand_cli_from_dict(
     {
         "eval": eval,
+        "train": train,
         "sample": sample,
         "server": server,
-        "train": train,
         "workflow": workflow,
     },
 )
