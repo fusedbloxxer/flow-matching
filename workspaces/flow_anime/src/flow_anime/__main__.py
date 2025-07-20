@@ -1,5 +1,6 @@
 import tyro
 
+from .dataset import dataset
 from .eval import eval
 from .sample import sample
 from .server import server
@@ -13,6 +14,7 @@ tyro.extras.subcommand_cli_from_dict(
         "train": train,
         "sample": sample,
         "server": server,
+        "dataset": dataset,
         "workflow": workflow,
     },
 )

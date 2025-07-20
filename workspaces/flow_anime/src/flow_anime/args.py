@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Tuple
 
 from msgspec import Struct
 from tyro.conf import arg, subcommand
@@ -183,11 +183,52 @@ _WandbServerArgs = Annotated[WandbArgs, subcommand(name="wandb")]
 class ServerArgs(Struct, kw_only=True):
     """Arguments for servers"""
 
-    # The type of server to run
+    # Type of server to run
     server_args: Annotated[_WandbServerArgs, arg(name="")]
 
 
 ServerArgs = Annotated[ServerArgs, arg(name="", prefix_name=False)]  # type: ignore
 
 
-__all__ = ["TrainArgs", "ServerArgs"]
+class DatasetConvertToolArgs(Struct, tag="convert"):
+    """Arguments for dataset conversion"""
+
+    # Path to the source dataset directory
+    src: str
+
+    # Path to the destination dataset directory
+    dst: str
+
+    # Resolution to resize images to (height, width)
+    res: Tuple[int, int] = (256, 256)
+
+    # Transformation to apply to images
+    transform: Literal["resize_center_crop"] = "resize_center_crop"
+
+
+_DatasetConvertToolArgs = Annotated[DatasetConvertToolArgs, subcommand(name="convert")]
+
+
+class DatasetEncodeToolArgs(Struct, tag="encode"):
+    """Arguments for dataset encoding"""
+
+    # Path to the source dataset directory
+    src: str
+
+    # Path to the destination dataset directory
+    dst: str
+
+    # AutoEncoder arguments to use for encoding the dataset
+    ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs
+
+
+_DatasetEncodeToolArgs = Annotated[DatasetEncodeToolArgs, subcommand(name="encode")]
+
+
+class DatasetToolsArgs(Struct, kw_only=True):
+    """Arguments for datasets"""
+
+    tool_args: Annotated[_DatasetConvertToolArgs | _DatasetEncodeToolArgs, arg(name="", prefix_name=False)]
+
+
+DatasetToolsArgs = Annotated[DatasetToolsArgs, arg(name="", prefix_name=False)]  # type: ignore

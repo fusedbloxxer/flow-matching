@@ -10,8 +10,8 @@ from .args import ServerArgs, WandbArgs
 
 def server(args: ServerArgs) -> None:
     match args.server_args:
-        case WandbArgs() as wandb_args:
-            wandb(wandb_args)
+        case WandbArgs() as server_args:
+            wandb(server_args)
 
 
 def wandb(args: WandbArgs) -> None:
