@@ -29,15 +29,11 @@ class TrackArgs(Struct):
 _TrackArgs = Annotated[TrackArgs, subcommand(name="track")]
 
 
-class DatasetArgs(Struct):
-    """Arguments for dataset"""
+class DanbooruDatasetArgs(Struct):
+    """Arguments for Danbooru dataset"""
 
     # The path to the dataset directory
     path: str = "data"
-
-
-class DanbooruDatasetArgs(DatasetArgs):
-    """Arguments for Danbooru dataset"""
 
 
 _DanbooruDatasetArgs = Annotated[DanbooruDatasetArgs, arg(name="danbooru")]
