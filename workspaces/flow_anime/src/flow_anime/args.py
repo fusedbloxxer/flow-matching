@@ -189,12 +189,6 @@ ServerArgs = Annotated[ServerArgs, arg(name="", prefix_name=False)]  # type: ign
 class DatasetConvertToolArgs(Struct, tag="convert"):
     """Arguments for dataset conversion"""
 
-    # Path to the source dataset directory
-    src: str
-
-    # Path to the destination dataset directory
-    dst: str
-
     # Resolution to resize images to (height, width)
     res: Tuple[int, int] = (256, 256)
 
@@ -205,14 +199,18 @@ class DatasetConvertToolArgs(Struct, tag="convert"):
 _DatasetConvertToolArgs = Annotated[DatasetConvertToolArgs, subcommand(name="convert")]
 
 
+class DatasetEmbedToolArgs(Struct, tag="embed"):
+    """Arguments for embedding the captions in the dataset"""
+
+    # Text Encoders used for encoding text into embeddings
+    te: _CLIPTextEncoderArgs | _T5GemmaTextEncoderArgs | _T5CLIPTextEncoderArgs
+
+
+_DatasetEmbedToolArgs = Annotated[DatasetEmbedToolArgs, subcommand(name="embed")]
+
+
 class DatasetEncodeToolArgs(Struct, tag="encode"):
     """Arguments for dataset encoding"""
-
-    # Path to the source dataset directory
-    src: str
-
-    # Path to the destination dataset directory
-    dst: str
 
     # AutoEncoder arguments to use for encoding the dataset
     ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs
@@ -224,7 +222,14 @@ _DatasetEncodeToolArgs = Annotated[DatasetEncodeToolArgs, subcommand(name="encod
 class DatasetToolsArgs(Struct, kw_only=True):
     """Arguments for datasets"""
 
-    tool_args: Annotated[_DatasetConvertToolArgs | _DatasetEncodeToolArgs, arg(name="", prefix_name=False)]
+    # Path to the source dataset directory
+    src: str
+
+    # Path to the destination dataset directory
+    dst: str
+
+    # Arguments for the specific dataset tool to use
+    tool_args: Annotated[_DatasetConvertToolArgs | _DatasetEncodeToolArgs | _DatasetEmbedToolArgs, arg(name="", prefix_name=False)]
 
 
 DatasetToolsArgs = Annotated[DatasetToolsArgs, arg(name="", prefix_name=False)]  # type: ignore
