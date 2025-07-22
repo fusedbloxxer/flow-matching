@@ -29,14 +29,14 @@ class TrackArgs(Struct):
 _TrackArgs = Annotated[TrackArgs, subcommand(name="track")]
 
 
-class DanbooruDatasetArgs(Struct):
+class DatasetArgs(Struct):
     """Arguments for Danbooru dataset"""
 
     # The path to the dataset directory
     path: str = "data"
 
 
-_DanbooruDatasetArgs = Annotated[DanbooruDatasetArgs, arg(name="danbooru")]
+_DatasetArgs = Annotated[DatasetArgs, arg(name="danbooru")]
 
 
 class SDXLAutoEncoderArgs(Struct, tag="sdxl"):
@@ -101,6 +101,12 @@ class TrainParamsArgs(Struct):
     # The number of steps
     steps: int | None = 1
 
+    # Freeze text encoder(s) during training
+    freeze_te: bool = True
+
+    # Use cached embeddings during training
+    use_cached_embeddings: bool = False
+
     # Evaluate split ratio
     eval_split: float | None = 0.1
 
@@ -139,7 +145,7 @@ class TrainArgs(Struct, kw_only=True):
     train: _TrainParametersArgs
 
     # Dataset used for training
-    data: _DanbooruDatasetArgs
+    data: _DatasetArgs
 
     # Tracking provider for experiments
     track: _TrackArgs
@@ -186,8 +192,21 @@ class ServerArgs(Struct, kw_only=True):
 ServerArgs = Annotated[ServerArgs, arg(name="", prefix_name=False)]  # type: ignore
 
 
+class DatasetDownloadToolArgs(Struct, tag="download"):
+    """Arguments for downloading datasets"""
+
+
+_DatasetDownloadToolArgs = Annotated[DatasetDownloadToolArgs, subcommand(name="download")]
+
+
 class DatasetConvertToolArgs(Struct, tag="convert"):
     """Arguments for dataset conversion"""
+
+    # Path to the source dataset directory
+    src: str
+
+    # Path to the destination dataset directory
+    dst: str
 
     # Resolution to resize images to (height, width)
     res: Tuple[int, int] = (256, 256)
@@ -199,18 +218,14 @@ class DatasetConvertToolArgs(Struct, tag="convert"):
 _DatasetConvertToolArgs = Annotated[DatasetConvertToolArgs, subcommand(name="convert")]
 
 
-class DatasetEmbedToolArgs(Struct, tag="embed"):
-    """Arguments for embedding the captions in the dataset"""
-
-    # Text Encoders used for encoding text into embeddings
-    te: _CLIPTextEncoderArgs | _T5GemmaTextEncoderArgs | _T5CLIPTextEncoderArgs
-
-
-_DatasetEmbedToolArgs = Annotated[DatasetEmbedToolArgs, subcommand(name="embed")]
-
-
 class DatasetEncodeToolArgs(Struct, tag="encode"):
     """Arguments for dataset encoding"""
+
+    # Path to the source dataset directory
+    src: str
+
+    # Path to the destination dataset directory
+    dst: str
 
     # AutoEncoder arguments to use for encoding the dataset
     ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs
@@ -219,8 +234,8 @@ class DatasetEncodeToolArgs(Struct, tag="encode"):
 _DatasetEncodeToolArgs = Annotated[DatasetEncodeToolArgs, subcommand(name="encode")]
 
 
-class DatasetToolsArgs(Struct, kw_only=True):
-    """Arguments for datasets"""
+class DatasetEmbedToolArgs(Struct, tag="embed"):
+    """Arguments for embedding the captions in the dataset"""
 
     # Path to the source dataset directory
     src: str
@@ -228,8 +243,18 @@ class DatasetToolsArgs(Struct, kw_only=True):
     # Path to the destination dataset directory
     dst: str
 
+    # Text Encoders used for encoding text into embeddings
+    te: _CLIPTextEncoderArgs | _T5GemmaTextEncoderArgs | _T5CLIPTextEncoderArgs
+
+
+_DatasetEmbedToolArgs = Annotated[DatasetEmbedToolArgs, subcommand(name="embed")]
+
+
+class DatasetToolsArgs(Struct, kw_only=True):
+    """Arguments for datasets"""
+
     # Arguments for the specific dataset tool to use
-    tool_args: Annotated[_DatasetConvertToolArgs | _DatasetEncodeToolArgs | _DatasetEmbedToolArgs, arg(name="", prefix_name=False)]
+    tool_args: Annotated[_DatasetDownloadToolArgs | _DatasetConvertToolArgs | _DatasetEncodeToolArgs | _DatasetEmbedToolArgs, arg(name="", prefix_name=False)]
 
 
 DatasetToolsArgs = Annotated[DatasetToolsArgs, arg(name="", prefix_name=False)]  # type: ignore
