@@ -192,14 +192,14 @@ class ServerArgs(Struct, kw_only=True):
 ServerArgs = Annotated[ServerArgs, arg(name="", prefix_name=False)]  # type: ignore
 
 
-class DatasetDownloadToolArgs(Struct, tag="download"):
+class DownloadDatasetArgs(Struct, tag="download"):
     """Arguments for downloading datasets"""
 
 
-_DatasetDownloadToolArgs = Annotated[DatasetDownloadToolArgs, subcommand(name="download")]
+_DownloadDatasetArgs = Annotated[DownloadDatasetArgs, subcommand(name="download")]
 
 
-class DatasetConvertToolArgs(Struct, tag="convert"):
+class ConvertDatasetArgs(Struct, tag="convert"):
     """Arguments for dataset conversion"""
 
     # Path to the source dataset directory
@@ -215,10 +215,10 @@ class DatasetConvertToolArgs(Struct, tag="convert"):
     transform: Literal["resize_center_crop"] = "resize_center_crop"
 
 
-_DatasetConvertToolArgs = Annotated[DatasetConvertToolArgs, subcommand(name="convert")]
+_ConvertDatasetArgs = Annotated[ConvertDatasetArgs, subcommand(name="convert")]
 
 
-class DatasetEncodeToolArgs(Struct, tag="encode"):
+class EncodeDatasetArgs(Struct, tag="encode"):
     """Arguments for dataset encoding"""
 
     # Path to the source dataset directory
@@ -231,10 +231,10 @@ class DatasetEncodeToolArgs(Struct, tag="encode"):
     ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs
 
 
-_DatasetEncodeToolArgs = Annotated[DatasetEncodeToolArgs, subcommand(name="encode")]
+_EncodeDatasetArgs = Annotated[EncodeDatasetArgs, subcommand(name="encode")]
 
 
-class DatasetEmbedToolArgs(Struct, tag="embed"):
+class EmbedDatasetArgs(Struct, tag="embed"):
     """Arguments for embedding the captions in the dataset"""
 
     # Path to the source dataset directory
@@ -247,14 +247,14 @@ class DatasetEmbedToolArgs(Struct, tag="embed"):
     te: _CLIPTextEncoderArgs | _T5GemmaTextEncoderArgs | _T5CLIPTextEncoderArgs
 
 
-_DatasetEmbedToolArgs = Annotated[DatasetEmbedToolArgs, subcommand(name="embed")]
+_EmbedDatasetArgs = Annotated[EmbedDatasetArgs, subcommand(name="embed")]
 
 
 class DatasetToolsArgs(Struct, kw_only=True):
     """Arguments for datasets"""
 
     # Arguments for the specific dataset tool to use
-    tool_args: Annotated[_DatasetDownloadToolArgs | _DatasetConvertToolArgs | _DatasetEncodeToolArgs | _DatasetEmbedToolArgs, arg(name="", prefix_name=False)]
+    tool_args: Annotated[_DownloadDatasetArgs | _ConvertDatasetArgs | _EncodeDatasetArgs | _EmbedDatasetArgs, arg(name="", prefix_name=False)]
 
 
 DatasetToolsArgs = Annotated[DatasetToolsArgs, arg(name="", prefix_name=False)]  # type: ignore
