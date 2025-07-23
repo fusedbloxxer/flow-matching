@@ -4,6 +4,38 @@ from msgspec import Struct
 from tyro.conf import arg, subcommand
 
 
+class WandbArgs(Struct, tag="wandb"):
+    """Arguments for wandb server"""
+
+    # Local path for the volume
+    path: str
+
+    # Port to bind the server to
+    port: int = 8080
+
+    # Official docker image name for wandb
+    image: str = "wandb/local"
+
+    # Volume name to identify the host storage
+    volume: str = "wandb-flow-anime"
+
+    # Container name to identify the wandb instance
+    container = "wandb-flow-anime"
+
+
+_WandbServerArgs = Annotated[WandbArgs, subcommand(name="wandb")]
+
+
+class ServerArgs(Struct, kw_only=True):
+    """Arguments for servers"""
+
+    # Type of server to run
+    server_args: Annotated[_WandbServerArgs, arg(name="")]
+
+
+ServerArgs = Annotated[ServerArgs, arg(name="", prefix_name=False)]  # type: ignore
+
+
 class TrackArgs(Struct):
     """Arguments for tracking experiments"""
 
@@ -29,32 +61,49 @@ class TrackArgs(Struct):
 _TrackArgs = Annotated[TrackArgs, subcommand(name="track")]
 
 
-class DatasetArgs(Struct):
-    """Arguments for Danbooru dataset"""
+class FlowersDatasetArgs(Struct, tag="flowers"):
+    """Arguments for Oxford Flowers dataset (https://www.robots.ox.ac.uk/~vgg/data/flowers/)"""
 
     # The path to the dataset directory
     path: str = "data"
 
 
-_DatasetArgs = Annotated[DatasetArgs, arg(name="danbooru")]
+_FlowersDatasetArgs = Annotated[FlowersDatasetArgs, subcommand(name="flowers")]
+
+
+class DanbooruDatasetArgs(Struct, tag="danbooru"):
+    """Arguments for Danbooru dataset (https://huggingface.co/datasets/deepghs/danbooru2024)"""
+
+    # The path to the dataset directory
+    path: str = "data"
+
+
+_DanbooruDatasetArgs = Annotated[DanbooruDatasetArgs, subcommand(name="danbooru")]
 
 
 class SDXLAutoEncoderArgs(Struct, tag="sdxl"):
-    """Arguments for Stable Diffusion XL AutoEncoder"""
+    """Arguments for Stable Diffusion XL AutoEncoder (https://arxiv.org/abs/2307.01952)"""
 
 
 _SDXLAutoEncoderArgs = Annotated[SDXLAutoEncoderArgs, subcommand(name="sdxl")]
 
 
 class DCAutoEncoderArgs(Struct, tag="dc"):
-    """Arguments for Deep Compression AutoEncoder"""
+    """Arguments for Deep Compression AutoEncoder (https://arxiv.org/abs/2410.10733)"""
 
 
 _DCAutoEncoderArgs = Annotated[DCAutoEncoderArgs, subcommand(name="dc")]
 
 
+class DeTokAutoEncoderArgs(Struct, tag="detok"):
+    """Arguments for DeTok AutoEncoder (https://arxiv.org/abs/2507.15856)"""
+
+
+_DeTokAutoEncoderArgs = Annotated[DeTokAutoEncoderArgs, subcommand(name="detok")]
+
+
 class T5GemmaTextEncoderArgs(Struct, tag="t5gemma"):
-    """Arguments for T5 Gemma Text Encoder"""
+    """Arguments for T5 Gemma Text Encoder (https://arxiv.org/abs/2504.06225)"""
 
     # The latent size of the text encoder
     latent_size: int = 224
@@ -64,7 +113,7 @@ _T5GemmaTextEncoderArgs = Annotated[T5GemmaTextEncoderArgs, subcommand(name="t5g
 
 
 class CLIPTextEncoderArgs(Struct, tag="clip"):
-    """Arguments for CLIP Text Encoder"""
+    """Arguments for CLIP Text Encoder (https://arxiv.org/abs/2103.00020)"""
 
     # The latent size of the text encoder
     latent_size: int = 224
@@ -104,6 +153,15 @@ class TrainParamsArgs(Struct):
     # Freeze text encoder(s) during training
     freeze_te: bool = True
 
+    # Use exponential moving average
+    ema_decay: float = 0.0
+
+    # Grad accumulation
+    grad_accumulation: int = 0
+
+    # Use cached latents during training
+    use_cached_latents: bool = True
+
     # Use cached embeddings during training
     use_cached_embeddings: bool = False
 
@@ -141,17 +199,17 @@ class TrainArgs(Struct, kw_only=True):
     # Seed of the experiment
     seed: int = 42
 
+    # Tracking provider
+    track: _TrackArgs
+
     # Training parameters
     train: _TrainParametersArgs
 
     # Dataset used for training
-    data: _DatasetArgs
-
-    # Tracking provider for experiments
-    track: _TrackArgs
+    data: _FlowersDatasetArgs | _DanbooruDatasetArgs
 
     # AutoEncoder used for encoding images into latents
-    ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs
+    ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs | _DeTokAutoEncoderArgs
 
     # Text Encoders used for encoding text into latents
     te: _CLIPTextEncoderArgs | _T5GemmaTextEncoderArgs | _T5CLIPTextEncoderArgs
@@ -160,40 +218,11 @@ class TrainArgs(Struct, kw_only=True):
 TrainArgs = Annotated[TrainArgs, arg(name="")]  # type: ignore
 
 
-class WandbArgs(Struct, kw_only=True, tag="wandb"):
-    """Arguments for wandb server"""
-
-    # Local path for the volume
-    path: str
-
-    # Port to bind the server to
-    port: int = 8080
-
-    # Official docker image name for wandb
-    image: str = "wandb/local"
-
-    # Volume name to identify the host storage
-    volume: str = "wandb-flow-anime"
-
-    # Container name to identify the wandb instance
-    container = "wandb-flow-anime"
-
-
-_WandbServerArgs = Annotated[WandbArgs, subcommand(name="wandb")]
-
-
-class ServerArgs(Struct, kw_only=True):
-    """Arguments for servers"""
-
-    # Type of server to run
-    server_args: Annotated[_WandbServerArgs, arg(name="")]
-
-
-ServerArgs = Annotated[ServerArgs, arg(name="", prefix_name=False)]  # type: ignore
-
-
 class DownloadDatasetArgs(Struct, tag="download"):
     """Arguments for downloading datasets"""
+
+    # Dataset to download
+    data: Annotated[_FlowersDatasetArgs | _DanbooruDatasetArgs, arg(name="")]
 
 
 _DownloadDatasetArgs = Annotated[DownloadDatasetArgs, subcommand(name="download")]
@@ -228,7 +257,7 @@ class EncodeDatasetArgs(Struct, tag="encode"):
     dst: str
 
     # AutoEncoder arguments to use for encoding the dataset
-    ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs
+    ae: _SDXLAutoEncoderArgs | _DCAutoEncoderArgs | _DeTokAutoEncoderArgs
 
 
 _EncodeDatasetArgs = Annotated[EncodeDatasetArgs, subcommand(name="encode")]
