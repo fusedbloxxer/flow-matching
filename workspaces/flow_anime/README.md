@@ -13,7 +13,7 @@
 ## Prerequisites
 
 - **Task 1**: Read the TM Paper - DONE
-- **Task 2:** Review this [repo](https://github.com/gstoica27/DeltaFM) for best practices
+- **Task 2:** Review this [repo](https://github.com/gstoica27/DeltaFM) for best practices - DONE
 
   - How they perform the pre-processing
   - How they are sampling from $p_t$
@@ -84,7 +84,7 @@
 
 ### Task 3: Integrate External Models
 
-#### Subtask 3.1: Image Latent Encoder (DC-AE / EQ-VAE)
+#### Subtask 3.1: Image Latent Encoder (DC-AE | DeTok)
 
 1. Design architecture.
 2. Define encoding pipeline.
@@ -104,9 +104,9 @@
 
 ---
 
-### Task 4: Implement TM Architecture
+### Task 4: Implement DTM Architecture
 
-- Translate TM design into code modules.
+- Translate DTM design into code modules.
 - Ensure modularity for ease of testing.
 
 ---
@@ -143,6 +143,10 @@
 #### Subtask 6.3: Contrastive Loss
 
 - Reference: [https://arxiv.org/abs/2506.05350](https://arxiv.org/abs/2506.05350)
+
+#### Subtask 6.4: Mean Flows
+
+- Reference: [https://arxiv.org/abs/2505.13447](https://arxiv.org/abs/2505.13447)
 
 ---
 
